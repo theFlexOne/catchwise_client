@@ -4,6 +4,7 @@ import viteLogo from "/vite.svg";
 import RootLayout from './layouts/RootLayout';
 import useUserLocation from './hooks/useUserLocation';
 import LandingPage from './pages/LandingPage';
+import { useLakes } from './contexts/LakesContext';
 
 type Link = {
   url: string;
@@ -19,6 +20,7 @@ const links: Link[] = [
 
 function App() {
   const [coords, coordsError] = useUserLocation();
+
 
   return (
     <RootLayout links={links}>

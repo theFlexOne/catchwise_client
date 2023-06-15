@@ -2,7 +2,6 @@ import { GoogleMap, useJsApiLoader } from "@react-google-maps/api";
 import axios from "axios";
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import LakeMarker from "./LakeMarker";
-// import buildUrl from "../helpers/buildUrl";
 import { Lake } from "../types/Lake";
 import MapSearchBar from "./MapSearchBar";
 import useGooglePlaces from "../hooks/useGoogleApi";
@@ -23,20 +22,15 @@ export default function Map({ center, zoom = 14 }: MapProps) {
   const { isLoaded, loadError } = useJsApiLoader(GOOGLE_API_CONFIG);
   const [mapObject, setMapObject] = useState<google.maps.Map | null>(null); //? could be a ref if all interactions are done via callbacks/handlers
 
-  const [visibleLakes, setVisibleLakes] = useState<Lake[]>([]);
+  const [lakes, setLakes] = useState<Lake[]>([]);
   const [selectedLake, setSelectedLake] = useState<Lake | null>(null);
-  const [selectedPlaceDetails, setSelectedPlaceDetails] = useState<any | null>(
-    null
-  );
 
-  const [currentCenter, setCurrentCenter] = useState<LatLngLiteral>(center);
-  const [currentBounds, setCurrentBounds] = useState<LatLngBounds | null>(null);
+  const centerRef = useRef<LatLngLiteral>(center);
 
   const { searchForPlace, getPlaceDetails } = useGooglePlaces();
 
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  function handleLoad(map: google.maps.Map) {
+    function handleLoad(map: google.maps.Map) {
     //? using and clearing an interval because onLoad()
     //? is called before the map is actually ready
     const interval = setInterval(() => {
@@ -52,25 +46,11 @@ export default function Map({ center, zoom = 14 }: MapProps) {
 
       clearInterval(interval);
       setMapObject(map);
-      fetchAllLakes(setVisibleLakes);
+      fetchLakesInRange(centerRef.current, setLakes)
     }, 10);
   }
 
-  function handleBoundsChange() {
-    if (!mapObject) return;
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      const newBounds = mapObject.getBounds();
-      if (!newBounds) return;
 
-      const ne = newBounds.getNorthEast();
-      const sw = newBounds.getSouthWest();
-      if (!currentBounds?.contains(ne) || !currentBounds?.contains(sw))
-        fetchLakesWithinBounds(newBounds, setVisibleLakes);
-
-      setCurrentBounds(newBounds);
-    }, 150);
-  }
 
   function handleMarkerClick(lake: Lake) {
     return () => setSelectedLake(lake);
@@ -95,27 +75,30 @@ export default function Map({ center, zoom = 14 }: MapProps) {
     if (!coords) return;
     mapObject?.setCenter(coords);
   }
+  
   useEffect(() => {
     if (!mapObject) return;
     console.log("mapObject", mapObject);
   }, [mapObject]);
-    
+
+  console.log("lake", lakes[0]);
+  
 
   if (loadError) return <div>Error loading map. Try refreshing the page?</div>;
 
   return isLoaded ? (
-    <div className="absolute inset-0 max-w-[960px] mx-auto">
+    <div className="absolute inset-0 max-w-[960px] aspect-square mx-auto">
       <GoogleMap
         mapContainerStyle={{
           position: "absolute",
           inset: 0,
         }}
         options={MAP_OPTIONS}
-        center={currentCenter}
+        center={centerRef.current}
         zoom={zoom}
         onLoad={handleLoad}
       >
-        {visibleLakes.map((lake) => (
+        {lakes.map((lake) => (
           <LakeMarker
             key={lake.id}
             lake={lake}
@@ -134,33 +117,19 @@ export default function Map({ center, zoom = 14 }: MapProps) {
   );
 }
 
-async function fetchLakesWithinBounds(
-  bounds: google.maps.LatLngBounds | undefined,
-  success: React.Dispatch<React.SetStateAction<Lake[]>>,
-  failure?: (error: unknown) => void
-) {
-  const max = bounds?.getNorthEast().toJSON();
-  const min = bounds?.getSouthWest().toJSON();
 
-  const params = {
-    minLat: (min?.lat ?? 0).toString(),
-    minLng: (min?.lng ?? 0).toString(),
-    maxLat: (max?.lat ?? 0).toString(),
-    maxLng: (max?.lng ?? 0).toString(),
-  };
-
-  const url = new URL(`${SERVER_URL}/api/v1/lakes/in-range`);
-  url.search = new URLSearchParams(params).toString();
-  
-
-  try {
-    const { data } = await axios.get(url.toString());
-    success(data);
-  } catch (error) {
-    if (failure) failure(error);
-    else console.error(error);
-  }
+async function fetchLakes(setLakes: Dispatch<SetStateAction<Lake[]>>) {
+    const response = await axios.get(`${SERVER_URL}/api/v1/lakes`);
+    setLakes(response.data);
 }
+
+async function fetchLakesInRange(center: LatLngLiteral, setLakes: Dispatch<SetStateAction<Lake[]>>): Promise<void> {
+    const response = await axios.get(`${SERVER_URL}/api/v1/lakes/in-range?lat=${center.lat}&lng=${center.lng}&range=${241 * 1000}`);
+    setLakes(response.data);
+
+}
+
+
 
 type MapProps = {
   center: LatLngLiteral;
@@ -170,17 +139,3 @@ type LatLngLiteral = google.maps.LatLngLiteral;
 type MapOptions = google.maps.MapOptions;
 type LatLngBounds = google.maps.LatLngBounds;
 type LatLngBoundsLiteral = google.maps.LatLngBoundsLiteral;
-
-async function fetchAllLakes(setVisibleLakes: Dispatch<SetStateAction<Lake[]>>) {
-
-  const url = new URL(`${SERVER_URL}/api/v1/lakes`);
-  try {
-    const { data } = await axios.get(url.toString());
-    console.log(data);
-    
-    setVisibleLakes(data);
-  } catch (error) {
-    console.error(error);
-  }  
-}
-

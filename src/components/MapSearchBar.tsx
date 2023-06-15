@@ -32,7 +32,6 @@ export default function MapSearchBar({
         console.warn("Failed to fetch lake names");
       }
     }
-    fetchLakeNames();
   }, []);
 
   return (

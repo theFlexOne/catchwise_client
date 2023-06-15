@@ -46,8 +46,8 @@ const LakeMarker = ({ onClick, lake, isSelected }: LakeMarkerProps) => {
     <Marker
       key={lake.id}
       position={{
-        lat: lake.coordinates.latitude,
-        lng: lake.coordinates.longitude,
+        lat: lake.coordinates.longitude,
+        lng: lake.coordinates.latitude,
       }}
       onClick={handleMarkerClick}
     >
