@@ -16,9 +16,6 @@ interface LakeMarkerProps {
 
 const LakeMarker = ({ onClick, lake, isSelected }: LakeMarkerProps) => {
   const [fishList, setFishList] = useState<Fish[] | null>(null);
-  const [lakeName, setLakeName] = useState<string | null>(null);
-
-  const { searchForPlace } = useGoogleApi();
 
   const handleMarkerClick = async () => {
     if (onClick) onClick();
@@ -26,19 +23,6 @@ const LakeMarker = ({ onClick, lake, isSelected }: LakeMarkerProps) => {
     if (fishList == null) {
       const fishList = await fetchLakeFishList(lake);
       setFishList(fishList);
-    }
-
-    if (lakeName == null) {
-      const cleanLakeName = lake.name
-        .split(" ")
-        .filter((w) => !w.match(/[()]/))
-        .join(" ");
-      const searchData = await searchForPlace(`"${cleanLakeName} lake"`);
-      console.log(searchData);
-      let name = (searchData?.candidates[0]?.name as string) || "";
-      if (!name.match(/lake/i)) name = lake.name;
-
-      setLakeName(name);
     }
   };
 
@@ -53,25 +37,14 @@ const LakeMarker = ({ onClick, lake, isSelected }: LakeMarkerProps) => {
     >
       {fishList?.length && isSelected && (
         <InfoWindow>
-          {lakeName ? (
-            <div className="capitalize">
-              <h2 className="text-2xl font-semibold mb-2">{lakeName}</h2>
-              <ul className="flex flex-col gap-2 px-2 font-medium tracking-wide">
-                {fishList.map((fish) => (
-                  <li key={fish.id}>{fish.name}</li>
-                ))}
-              </ul>
-            </div>
-          ) : (
-            <div className="capitalize">
-              <div className="bg-neutral-500 rounded-sm w-[20ch] h-4 mb-2 px-4 transition-opacity" />
-              <ul className="flex flex-col gap-2 px-2 font-medium tracking-wide">
-                {fishList.map((fish) => (
-                  <li key={fish.id}>{fish.name}</li>
-                ))}
-              </ul>
-            </div>
-          )}
+          <div className="capitalize">
+            <h2 className="text-2xl font-semibold mb-2">{lake.name}</h2>
+            <ul className="flex flex-col gap-2 px-2 font-medium tracking-wide">
+              {fishList.map((fish) => (
+                <li key={fish.id}>{fish.name}</li>
+              ))}
+            </ul>
+          </div>
         </InfoWindow>
       )}
     </Marker>

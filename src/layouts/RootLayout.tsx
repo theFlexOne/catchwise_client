@@ -7,9 +7,11 @@ interface RootLayoutProps {
 
 const RootLayout = ({ children, links }: RootLayoutProps) => {
   return (
-    <div className="min-h-screen bg-neutral-800 flex flex-col">
+    <div className="h-screen bg-neutral-800 flex flex-col">
       <Header links={links} />
-      <div className="relative grow">{children}</div>
+      <div className="grow">
+        {children}
+      </div>
     </div>
   );
 };
