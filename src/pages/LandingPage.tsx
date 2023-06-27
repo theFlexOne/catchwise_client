@@ -1,17 +1,25 @@
-import Map from "../components/Map";
+import { useEffect } from 'react';
+import { Lake } from "../types/Lake";
+import useLakes from "../hooks/useLakes";
+import MapboxMap from '../components/MapboxMap/MapboxMap';
+import { MapProvider } from '../contexts/MapContext';
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+const LandingPage = ({ coords }: { coords: { lat: number, lng: number } }) => {
 
 
-const LandingPage = ({ coords }: { coords: LatLngLiteral; }) => {
+
+
   return (
-    <div className="flex min-h-full">
-      <div className="w-1/4 min-w-[300px] bg-zinc-200/70"></div>
-      <div className="relative min-h-max w-full mx-auto">
-
-        <Map center={coords} />
+    <MapProvider>
+      <div className="flex min-h-full">
+        <div className="w-1/4 min-w-[300px] bg-zinc-200/70"></div>
+        <div className="min-h-max w-full mx-auto">
+          <MapboxMap center={coords} />
+        </div>
       </div>
-    </div>)
+    </MapProvider>)
 };
 
 export default LandingPage;
 
-type LatLngLiteral = google.maps.LatLngLiteral;

@@ -1,11 +1,12 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { Coords } from "../types/Coords";
 
 const IP_INFO_API_KEY = import.meta.env.VITE_IP_INFO_API_KEY as string;
 const IP_INFO_API_URL = "https://ipinfo.io" as string;
 
 export default function useUserLocation() {
-  const [coords, setCoords] = useState<any | null>(null);
+  const [coords, setCoords] = useState<Coords | null>(null);
   const [error, setError] = useState<any | null>(null);
 
   useEffect(() => {

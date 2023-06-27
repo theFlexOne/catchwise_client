@@ -5,5 +5,8 @@ export interface Lake {
     latitude: number;
     longitude: number;
   };
+  nearestTown?: string;
   fishUrl?: string;
+  fish?: Fish[];
+
 }
