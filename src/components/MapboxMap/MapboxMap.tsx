@@ -5,20 +5,15 @@ import { useContext, Fragment } from 'react';
 import { MapboxMapProps } from './MapboxMap.types';
 import axios from 'axios';
 import haversine from '../../helpers/haversine';
-import { MapContext, MapContextType } from '../../contexts/MapContext';
+import useMap from '../../contexts/MapContext/useMap';
 
 
 const MapboxMap = ({ center }: MapboxMapProps) => {
+  const { lakes, getLakes, mapRef, viewState } = useMap();
 
-  const { viewState, setViewState, mapRef, onMarkerClick, onMove, onLoad, markers } = useContext(MapContext) as MapContextType;
+  lakes.length && console.log(lakes);
 
-  console.log("viewState", viewState);
-
-
-
-  const markersToDisplay = filterByDistance({ lakes: markers, coords: { lat: viewState.latitude, lng: viewState.longitude }, range: 10 });
-
-
+  const lakesToDisplay = filterByDistance({ lakes, coords: center, range: 20000 });
 
   return (
     <Map
@@ -30,15 +25,15 @@ const MapboxMap = ({ center }: MapboxMapProps) => {
         width: "100%", height: "100%",
         transition: 'all 0.3s ease',
       }}
-      onMove={onMove}
-      onLoad={() => onLoad(center)}
+    // onMove={onMove}
+    // onLoad={() => onLoad(center)}
     >
-      {markers && markersToDisplay.map((lake: Lake) => (
+      {lakes.length && lakesToDisplay.map((lake: Lake) => (
 
         <Fragment key={lake.id}>
           <Marker
             style={{ cursor: 'pointer' }}
-            onClick={() => onMarkerClick(lake)}
+            // onClick={() => onMarkerClick(lake)}
             longitude={lake.coordinates.longitude}
             latitude={lake.coordinates.latitude}
           />
