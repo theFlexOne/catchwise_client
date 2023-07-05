@@ -2,19 +2,24 @@ import { createContext, useEffect, useMemo, useRef, useState } from 'react';
 import axios, { CanceledError } from 'axios';
 import LakeMarker from '../../types/LakeMarker';
 import { ViewState, ViewStateChangeEvent } from 'react-map-gl';
-import { Coordinate, LngLat, LngLatLike, Map } from 'mapbox-gl';
-import haversine from '../../helpers/haversine';
+import { LngLatLike, Map } from 'mapbox-gl';
 import Lake from '../../types/Lake';
 import LakeNameObject from '../../types/LakeName';
 
+const zoom = {
+  MIN: 0,
+  MAX: 15,
+  current: 10,
+}
+
 export const MapContext = createContext<MapContextType | null>(null);
 
-export const MapProvider = ({ children, coords }: { children: React.ReactNode, coords?: { lat: number, lng: number } }) => {
+export const MapProvider = ({ children, coords }: MapProviderProps) => {
   const [lakeMarkers, setLakeMarkers] = useState<LakeMarker[]>([]);
-  const [viewState, setViewState] = useState({
+  const [viewState, setViewState] = useState<ViewState>({
     latitude: coords?.lat || 0,
     longitude: coords?.lng || 0,
-    zoom: 10,
+    zoom: zoom.current,
     bearing: 0,
     pitch: 0,
     padding: { top: 0, bottom: 0, left: 0, right: 0 },
@@ -95,16 +100,13 @@ export const MapProvider = ({ children, coords }: { children: React.ReactNode, c
     const cell = [Math.floor(newCenter[0]), Math.floor(newCenter[1])].join(":");
     const scrollDistance = calculateDistance(scrollCenter, newCenter);
 
-    console.log("cell:", cell);
-    console.log("scrollDistance:", scrollDistance);
-
     if (cell !== currentCell && scrollDistance > 1000) {
-      console.log("Redrawing markers and fetching names");
+      console.log("Fetching new markers");
+      console.log("Drawing markers");
       setCurrentCell(cell);
       setScrollCenter(newCenter);
       fetchLakeMarkers({ lat: event.viewState.latitude, lng: event.viewState.longitude });
-    }
-    if (scrollDistance > 10000) {
+    } else if (scrollDistance > 10000) {
       console.log("Redrawing markers");
       setScrollCenter(newCenter);
     }
@@ -122,6 +124,12 @@ export const MapProvider = ({ children, coords }: { children: React.ReactNode, c
       curve: 2,
     });
     fetchLakeInfo(marker.lakeId);
+  }
+
+  function onSearch(lakeId: number): void {
+    const marker = lakeMarkers.find((marker) => marker.lakeId === lakeId);
+    if (!marker) return;
+    onMarkerClick(marker);
   }
 
   useEffect(() => {
@@ -147,6 +155,8 @@ export const MapProvider = ({ children, coords }: { children: React.ReactNode, c
     return distance < 50000;
   }), [lakeMarkers, scrollCenter]);
 
+  zoom.current = viewState.zoom;
+
   return (
     <MapContext.Provider value={{
       lakeMarkers: currentLakeMarkers,
@@ -154,9 +164,11 @@ export const MapProvider = ({ children, coords }: { children: React.ReactNode, c
       mapRef,
       viewState,
       currentLake,
+      zoom,
       fetchLakeNames,
       onMove,
       onMarkerClick,
+      onSearch
     }}>
       {children}
     </MapContext.Provider >
@@ -200,16 +212,23 @@ function calculateDistance([lng1, lat1]: number[], [lng2, lat2]: number[]): numb
   return distance;
 }
 
+type MapProviderProps = {
+  children: React.ReactNode,
+  coords?: { lat: number, lng: number }
+}
+
 
 type MapContextType = {
   lakeMarkers: LakeMarker[];
   mapRef: React.MutableRefObject<any>;
   viewState: ViewState;
   currentLake: Lake | null;
+  zoom: typeof zoom;
   fetchLakeMarkers: ({ lat, lng }: { lat: number, lng: number }) => void;
   fetchLakeNames: (options: Options) => Promise<LakeNameObject[] | undefined>;
   onMove: (event: ViewStateChangeEvent) => void;
   onMarkerClick: (marker: LakeMarker) => void;
+  onSearch: (lakeId: number) => void;
 }
 
 type Options = {

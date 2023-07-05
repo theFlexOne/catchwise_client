@@ -3,9 +3,27 @@ import useMap from "../contexts/MapContext/useMap"
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline"
 import LakeNameObject from "../types/LakeName";
 
-const SearchBar = ({ value, label, onChange, onSearch }: SearchBarProps) => {
+const SearchBar = () => {
+  const [value, setValue] = useState<string>("");
+
   const [lakeNamesList, setLakeNamesList] = useState<LakeNameObject[]>([]);
-  const { fetchLakeNames } = useMap();
+  const { fetchLakeNames, onSearch } = useMap();
+
+  function handleSubmit(e: FormEvent<HTMLFormElement>): void {
+    e.preventDefault();
+    try {
+
+      const datalistElement = document.getElementById("lakeNames") as HTMLDataListElement;
+      const option: HTMLOptionElement | null = datalistElement.querySelector(`option[value="${value}"]`);
+      if (!option) throw new Error("No option found");
+      const lakeId = option.dataset.id;
+      if (!lakeId) throw new Error("No lake id found");
+      onSearch(parseInt(lakeId));
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
 
   useEffect(() => {
     if (lakeNamesList.length) return;
@@ -23,48 +41,37 @@ const SearchBar = ({ value, label, onChange, onSearch }: SearchBarProps) => {
     return () => controller.abort();
   }, [lakeNamesList.length, fetchLakeNames]);
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>): void {
-    e.preventDefault();
-    const inputElement = e.currentTarget.elements[0] as HTMLInputElement;
-    const datalistElement = document.getElementById("lakeNames") as HTMLDataListElement;
 
-    console.log(e.target);
-    console.log(inputElement);
-    console.log(datalistElement);
-  }
 
   return (
-    <form onSubmit={handleSubmit}>
-      {label &&
-        <label
-          htmlFor="searchInput"
-          className="block text-sm font-medium text-gray-700"
-        >
-          {label}
-        </label>}
+    <form
+      className="flex items-center justify-center gap-2"
+      onSubmit={handleSubmit}>
       <input
         type="text"
         id="searchInput"
         value={value}
-        onChange={e => onChange(e)}
+        onChange={e => setValue(e.target.value)}
         className="rounded px-2 py-1 text-sm"
         placeholder="Search for a lake"
         list="lakeNames"
       />
-      <button onClick={onSearch}>
-        <MagnifyingGlassIcon className="w-5 h-5" />
+      <button
+        className="rounded-full p-1 bg-gray-100 hover:bg-gray-300 transition-colors shadow-md">
+        <MagnifyingGlassIcon className="w-5 h-5 stroke-[2px] stroke-zinc-900" />
       </button>
       <datalist id="lakeNames">
-        {lakeNamesList.map((lake) => (
-          <option
-            key={lake.id}
-            value={lake.name}
-            data-lake-id={lake.id}
-            className="capitalize"
-          />
-        ))}
+        {lakeNamesList.length && lakeNamesList.sort((a, b) => a.name.localeCompare(b.name))
+          .map((lake) => (
+            <option
+              key={lake.id}
+              value={lake.name}
+              data-lake-id={lake.id}
+              className="capitalize"
+            />
+          ))}
       </datalist>
-    </form>
+    </form >
   )
 }
 
@@ -72,7 +79,7 @@ type SearchBarProps = {
   value: string,
   label?: string,
   onChange: (e: ChangeEvent<HTMLInputElement>) => void,
-  onSearch: () => void
+  onSearch: (lakeId: string) => void
 }
 
 export default SearchBar
