@@ -1,9 +1,9 @@
 export type Fish = {
-  id: string;
+  id: number;
   name: string;
-  family: string;
+  genus: string;
   species: string;
   description: string;
-  identification: string;
-  commonNames: string[];
+  imgUrl: string;
+  locationImgUrl: string;
 };

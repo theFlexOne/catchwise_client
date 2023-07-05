@@ -1,10 +1,10 @@
-import { Lake } from '../types/Lake';
+import Lake from '../types/Lake';
 import haversine from './haversine';
 
 
-export function filterByDistance({ lakes, coords, range }: { lakes: Lake[], coords: { lat: number; lng: number; }, range: number; }): Lake[] {
-  return lakes.filter((lake) => {
-    const distance = haversine(coords, { lat: lake.coordinates.latitude, lng: lake.coordinates.longitude });
+export const filterByDistance = (lakes: Lake[], coords: { lat: number; lng: number; }, range: number): Lake[] => (
+  lakes.filter((lake) => {
+    const distance = haversine(coords, { lat: lake.geometry.coordinates[1], lng: lake.geometry.coordinates[0] });
     return distance <= range;
-  });
-}
+  })
+)

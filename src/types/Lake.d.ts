@@ -1,12 +1,14 @@
-export interface Lake {
-  id: string;
+import Fish from './Fish';
+
+interface Lake {
+  id: number;
   name: string;
-  coordinates: {
-    latitude: number;
-    longitude: number;
+  geometry: {
+    type: string;
+    coordinates: any[];
   };
   nearestTown?: string;
-  fishUrl?: string;
-  fish?: Fish[];
-
+  fishSpecies: Fish[];
 }
+
+export default Lake;
