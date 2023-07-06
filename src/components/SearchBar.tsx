@@ -5,9 +5,7 @@ import LakeNameObject from "../types/LakeName";
 
 const SearchBar = () => {
   const [value, setValue] = useState<string>("");
-
-  const [lakeNamesList, setLakeNamesList] = useState<LakeNameObject[]>([]);
-  const { fetchLakeNames, onSearch } = useMap();
+  const { lakeMarkers, onSearch } = useMap();
 
   function handleSubmit(e: FormEvent<HTMLFormElement>): void {
     e.preventDefault();
@@ -23,23 +21,6 @@ const SearchBar = () => {
       console.log(err);
     }
   }
-
-
-  useEffect(() => {
-    if (lakeNamesList.length) return;
-    const controller = new AbortController();
-    console.log("fetching lake names");
-    async function fetch() {
-      const lakeNames: LakeNameObject[] | undefined = await fetchLakeNames({ signal: controller.signal });
-      if (!lakeNames) return;
-      setLakeNamesList(lakeNames);
-    }
-    try {
-      fetch();
-      // eslint-disable-next-line no-empty
-    } catch (err) { }
-    return () => controller.abort();
-  }, [lakeNamesList.length, fetchLakeNames]);
 
 
 
@@ -61,12 +42,12 @@ const SearchBar = () => {
         <MagnifyingGlassIcon className="w-5 h-5 stroke-[2px] stroke-zinc-900" />
       </button>
       <datalist id="lakeNames">
-        {lakeNamesList.length && lakeNamesList.sort((a, b) => a.name.localeCompare(b.name))
+        {lakeMarkers.length && lakeMarkers.sort((a, b) => a.lakeName.localeCompare(b.lakeName))
           .map((lake) => (
             <option
-              key={lake.id}
-              value={lake.name}
-              data-lake-id={lake.id}
+              key={lake.lakeId}
+              value={lake.lakeName}
+              data-lake-id={lake.lakeId}
               className="capitalize"
             />
           ))}
