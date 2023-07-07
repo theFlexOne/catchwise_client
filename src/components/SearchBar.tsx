@@ -1,7 +1,7 @@
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import useMap from "../contexts/MapContext/useMap"
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline"
-import LakeNameObject from "../types/LakeName";
+
 
 const SearchBar = () => {
   const [value, setValue] = useState<string>("");
@@ -11,7 +11,7 @@ const SearchBar = () => {
     e.preventDefault();
     try {
 
-      const datalistElement = document.getElementById("lakeNames") as HTMLDataListElement;
+      const datalistElement = document.getElementById("names") as HTMLDataListElement;
       const option: HTMLOptionElement | null = datalistElement.querySelector(`option[value="${value}"]`);
       if (!option) throw new Error("No option found");
       const lakeId = option.dataset.id;
@@ -35,19 +35,19 @@ const SearchBar = () => {
         onChange={e => setValue(e.target.value)}
         className="rounded px-2 py-1 text-sm"
         placeholder="Search for a lake"
-        list="lakeNames"
+        list="names"
       />
       <button
         className="rounded-full p-1 bg-gray-100 hover:bg-gray-300 transition-colors shadow-md">
         <MagnifyingGlassIcon className="w-5 h-5 stroke-[2px] stroke-zinc-900" />
       </button>
-      <datalist id="lakeNames">
-        {lakeMarkers.length && lakeMarkers.sort((a, b) => a.lakeName.localeCompare(b.lakeName))
+      <datalist id="names">
+        {lakeMarkers.length && lakeMarkers.sort((a, b) => a.name.localeCompare(b.name))
           .map((lake) => (
             <option
-              key={lake.lakeId}
-              value={lake.lakeName}
-              data-lake-id={lake.lakeId}
+              key={lake.id}
+              value={lake.name}
+              data-lake-id={lake.id}
               className="capitalize"
             />
           ))}
@@ -60,7 +60,7 @@ type SearchBarProps = {
   value: string,
   label?: string,
   onChange: (e: ChangeEvent<HTMLInputElement>) => void,
-  onSearch: (lakeId: string) => void
+  onSearch: (id: string) => void
 }
 
 export default SearchBar

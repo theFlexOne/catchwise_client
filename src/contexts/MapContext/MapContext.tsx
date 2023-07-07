@@ -1,4 +1,4 @@
-import { createContext, useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import axios, { CanceledError } from 'axios';
 import LakeMarker from '../../types/LakeMarker';
 import { ViewState, ViewStateChangeEvent } from 'react-map-gl';
@@ -38,8 +38,7 @@ export const MapProvider = ({ children, coords }: MapProviderProps) => {
 
   const { lakeMarkers, fetchLakeMarkers, fetchLakeInfo } = useLakes([viewState.longitude, viewState.latitude]);
 
-
-  function onMove(event: ViewStateChangeEvent): void {
+  const onMove = (event: ViewStateChangeEvent): void => {
     const newCenter: [number, number] = [event.viewState.longitude, event.viewState.latitude]
 
     const cell = [Math.floor(newCenter[0]), Math.floor(newCenter[1])].join(":");
@@ -56,10 +55,10 @@ export const MapProvider = ({ children, coords }: MapProviderProps) => {
       setScrollCenter(newCenter);
     }
     setViewState(event.viewState);
-  }
 
+  };
 
-  function onMarkerClick(marker: LakeMarker): void {
+  const onMarkerClick = (marker: LakeMarker): void => {
     const map = mapRef.current;
     if (!map) return;
     map.flyTo({
@@ -68,19 +67,37 @@ export const MapProvider = ({ children, coords }: MapProviderProps) => {
       speed: 1,
       curve: 2,
     });
-    fetchLakeInfo(marker.lakeId);
-  }
+    fetchLakeInfo(marker.id);
 
-  function onSearch(lakeId: number): void {
-    const marker = lakeMarkers.find((marker) => marker.lakeId === lakeId);
+  };
+
+  const onSearch = (lakeId: number): void => {
+    const marker = lakeMarkers.find((marker) => marker.id === lakeId);
     if (!marker) return;
     onMarkerClick(marker);
-  }
+  };
 
-  const currentLakeMarkers = useMemo(() => lakeMarkers.filter((marker) => {
+  useEffect(() => {
+    const controller = new AbortController();
+    const options: Options = { signal: controller.signal };
+
+    if (!coords) return;
+    fetchLakeMarkers([coords.lng, coords.lat], options);
+    return () => {
+      controller.abort();
+    };
+  }, []);
+
+
+
+  const currentLakeMarkers = lakeMarkers.filter((marker) => {
+    // console.log("Marker Coords: ", marker);
+    // console.log("Scroll Center: ", scrollCenter);
     const distance = calculateDistance(marker.coordinates, scrollCenter);
+    // console.log("Distance: ", distance);
+
     return distance < 50000;
-  }), [lakeMarkers, scrollCenter]);
+  });
 
   const zoomState = useMemo(() => ({
     ...zoom,

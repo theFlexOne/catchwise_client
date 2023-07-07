@@ -9,6 +9,8 @@ import Dot from './MarkerSymbols/Dot';
 const MapboxMap = () => {
   const { lakeMarkers, mapRef, onMove, onMarkerClick, viewState, zoomState } = useMap();
 
+
+
   return (
     <Map
       {...viewState}
@@ -25,7 +27,7 @@ const MapboxMap = () => {
     // onLoad={() => onLoad(center)}
     >
       {lakeMarkers.map((marker: LakeMarker) => (
-        <Fragment key={marker.lakeId}>
+        <Fragment key={marker.id}>
           <Marker
             style={{ cursor: 'pointer' }}
             onClick={() => onMarkerClick(marker)}

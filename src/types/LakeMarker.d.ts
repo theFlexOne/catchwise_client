@@ -1,10 +1,9 @@
 import { LngLat, LngLatLike } from "mapbox-gl";
 
 type LakeMarker = {
-  lakeId: number;
-  lakeName: string;
+  id: number;
+  name: string;
   coordinates: [number, number];
-  distance?: number;
 }
 
 export default LakeMarker;
