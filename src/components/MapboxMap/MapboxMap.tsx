@@ -7,17 +7,18 @@ import Dot from './MarkerSymbols/Dot';
 
 
 const MapboxMap = () => {
-  const { lakeMarkers, mapRef, onMove, onMarkerClick, viewState, zoomState } = useMap();
+  const { lakeMarkers, mapRef, onMove, onMarkerClick, initialViewState } = useMap();
+
 
 
 
   return (
     <Map
-      {...viewState}
+      initialViewState={initialViewState}
       ref={mapRef}
       mapboxAccessToken={import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN as string}
-      minZoom={zoomState.MIN}
-      maxZoom={zoomState.MAX}
+      minZoom={0}
+      maxZoom={15}
       mapStyle="mapbox://styles/mapbox/streets-v9"
       style={{
         width: "100%", height: "100%",
@@ -30,14 +31,11 @@ const MapboxMap = () => {
         <Fragment key={marker.id}>
           <Marker
             style={{ cursor: 'pointer' }}
-            onClick={() => onMarkerClick(marker)}
+            // onClick={() => onMarkerClick(marker)}
             longitude={marker.coordinates[0]}
             latitude={marker.coordinates[1]}
           >
-            {zoomState.current < 11 ?
-              <Dot /> :
-              <LakeSymbol />
-            }
+            <Dot /> :
           </Marker>
         </Fragment>
       ))}

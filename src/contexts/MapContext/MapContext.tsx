@@ -1,11 +1,11 @@
 import { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import axios, { CanceledError } from 'axios';
 import LakeMarker from '../../types/LakeMarker';
-import { ViewState, ViewStateChangeEvent } from 'react-map-gl';
-import { LngLatLike, Map } from 'mapbox-gl';
+import { LngLatBounds, MapboxEvent, ViewState, ViewStateChangeEvent } from 'react-map-gl';
 import Lake from '../../types/Lake';
-import LakeNameObject from '../../types/LakeName';
 import useLakes from '../../hooks/useLakes';
+import { MapRef } from 'react-map-gl';
+import { point, distance, inside, bboxPolygon } from '@turf/turf';
+import axios, { CanceledError } from 'axios';
 
 const zoom = {
   MIN: 0,
@@ -13,108 +13,106 @@ const zoom = {
   current: 10,
 }
 
+
 export const MapContext = createContext<MapContextType | null>(null);
 
 export const MapProvider = ({ children, coords }: MapProviderProps) => {
-  const [viewState, setViewState] = useState<ViewState>({
+  const [lakeMarkers, setLakeMarkers] = useState<LakeMarker[]>([]);
+  const [currentLake, setCurrentLake] = useState<Lake | null>(null);
+  const [bounds, setBounds] = useState<LngLatBounds | null>(null);
+
+  const mapRef = useRef<MapRef | null>(null);
+
+  const onMove = (event: ViewStateChangeEvent): void => {
+    const newBounds = event.target.getBounds();
+    setBounds(newBounds);
+  };
+
+
+  // const onMarkerClick = (marker: LakeMarker): void => {
+  //   const map = mapRef.current;
+  //   if (!map) return;
+  //   map.flyTo({
+  //     center: marker.coordinates,
+  //     zoom: 13,
+  //     speed: 1,
+  //     curve: 2,
+  //   });
+  //   fetchLakeInfo(marker.id);
+
+  // };
+
+  // const onSearch = (lakeId: number): void => {
+  //   const marker = lakeMarkers.find((marker) => marker.id === lakeId);
+  //   if (!marker) return;
+  //   onMarkerClick(marker);
+  // };
+
+
+  const fetchLakeMarkers = async (coords: [number, number], options: Options = {}): Promise<void> => {
+    const url = new URL("http://localhost:8080/api/v1/lakes/markers");
+    url.searchParams.append("lng", coords[0].toString());
+    url.searchParams.append("lat", coords[1].toString());
+    url.searchParams.append("radius", "10");
+
+    try {
+      const response = await axios.get(url.toString(), options)
+      const newLakeMarkers = response.data;
+      console.log("Number of new lake markers: ", newLakeMarkers.length);
+
+      setLakeMarkers(prev => [...prev, ...newLakeMarkers].reduce((acc, cur) => {
+        const index = acc.findIndex((marker: LakeMarker) => marker.id === cur.id);
+        if (index === -1) {
+          acc.push(cur);
+        }
+        return acc;
+      }, [] as LakeMarker[]));
+    } catch (error) {
+      if (error instanceof CanceledError) return;
+      console.error(error);
+    }
+  }
+
+  const currentLakeMarkers = (() => {
+    const bbox = bounds ? bboxPolygon([bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()]) : null;
+    if (!bbox) return [];
+    return lakeMarkers.filter((marker) => {
+      const markerPoint = point(marker.coordinates);
+      return inside(markerPoint, bbox);
+    });
+  })()
+
+  console.log(mapRef.current?.getZoom());
+
+  console.log("Number of current lake markers: ", currentLakeMarkers.length);
+
+
+  const initialViewState: ViewState = useMemo(() => ({
     latitude: coords?.lat || 0,
     longitude: coords?.lng || 0,
     zoom: zoom.current,
     bearing: 0,
     pitch: 0,
     padding: { top: 0, bottom: 0, left: 0, right: 0 },
-  });
+  }), [coords?.lat, coords?.lng]);
 
-  const [currentLake, setCurrentLake] = useState<Lake | null>(null);
-
-  const [currentCell, setCurrentCell] = useState<string>([
-    Math.floor(viewState.longitude),
-    Math.floor(viewState.latitude)
-  ].join(":"));
-
-  const [scrollCenter, setScrollCenter] = useState<[number, number]>([viewState.longitude, viewState.latitude]);
-
-  const mapRef = useRef<Map | null>(null);
-
-  const { lakeMarkers, fetchLakeMarkers, fetchLakeInfo } = useLakes([viewState.longitude, viewState.latitude]);
-
-  const onMove = (event: ViewStateChangeEvent): void => {
-    const newCenter: [number, number] = [event.viewState.longitude, event.viewState.latitude]
-
-    const cell = [Math.floor(newCenter[0]), Math.floor(newCenter[1])].join(":");
-    const scrollDistance = calculateDistance(scrollCenter, newCenter);
-
-    if (cell !== currentCell && scrollDistance > 1000) {
-      console.log("Fetching new markers");
-      console.log("Drawing markers");
-      setCurrentCell(cell);
-      setScrollCenter(newCenter);
-      fetchLakeMarkers(newCenter);
-    } else if (scrollDistance > 10000) {
-      console.log("Redrawing markers");
-      setScrollCenter(newCenter);
-    }
-    setViewState(event.viewState);
-
-  };
-
-  const onMarkerClick = (marker: LakeMarker): void => {
-    const map = mapRef.current;
-    if (!map) return;
-    map.flyTo({
-      center: marker.coordinates,
-      zoom: 13,
-      speed: 1,
-      curve: 2,
-    });
-    fetchLakeInfo(marker.id);
-
-  };
-
-  const onSearch = (lakeId: number): void => {
-    const marker = lakeMarkers.find((marker) => marker.id === lakeId);
-    if (!marker) return;
-    onMarkerClick(marker);
-  };
 
   useEffect(() => {
-    const controller = new AbortController();
-    const options: Options = { signal: controller.signal };
-
-    if (!coords) return;
-    fetchLakeMarkers([coords.lng, coords.lat], options);
-    return () => {
-      controller.abort();
-    };
-  }, []);
+    fetchLakeMarkers([initialViewState.longitude, initialViewState.latitude]);
+  }, [initialViewState.latitude, initialViewState.longitude]);
 
 
-
-  const currentLakeMarkers = lakeMarkers.filter((marker) => {
-    // console.log("Marker Coords: ", marker);
-    // console.log("Scroll Center: ", scrollCenter);
-    const distance = calculateDistance(marker.coordinates, scrollCenter);
-    // console.log("Distance: ", distance);
-
-    return distance < 50000;
-  });
-
-  const zoomState = useMemo(() => ({
-    ...zoom,
-    current: viewState.zoom
-  }), [viewState.zoom]);
 
   return (
     <MapContext.Provider value={{
       lakeMarkers: currentLakeMarkers,
       fetchLakeMarkers,
       mapRef,
-      viewState,
+      initialViewState,
       currentLake,
-      zoomState,
       onMove,
-      onMarkerClick,
-      onSearch
+      // onMarkerClick,
+      // onSearch
     }}>
       {children}
     </MapContext.Provider >
@@ -167,13 +165,13 @@ type MapProviderProps = {
 type MapContextType = {
   lakeMarkers: LakeMarker[];
   mapRef: React.MutableRefObject<any>;
-  viewState: ViewState;
   currentLake: Lake | null;
-  zoomState: typeof zoom;
+  initialViewState: ViewState;
   fetchLakeMarkers: (coords: [number, number], options?: Options) => void;
-  onMove: (event: ViewStateChangeEvent) => void;
-  onMarkerClick: (marker: LakeMarker) => void;
-  onSearch: (lakeId: number) => void;
+  onMove?: (event: ViewStateChangeEvent) => void;
+  onMarkerClick?: (marker: LakeMarker) => void;
+  onSearch?: (lakeId: number) => void;
+  onLoad?: (event: MapboxEvent) => void;
 }
 
 type Options = {

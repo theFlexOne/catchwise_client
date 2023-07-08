@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import axios, { CanceledError } from 'axios';
 import LakeNameObject from '../types/LakeName';
 import LakeMarker from '../types/LakeMarker';
@@ -13,17 +13,19 @@ const useLakes = (initialCenter: [number, number]) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | undefined>(undefined);
 
-  async function fetchLakeMarkers(coords: [number, number], options: Options = {}): Promise<LakeMarker[] | undefined> {
+  const fetchLakeMarkers = async (coords: [number, number], options: Options = {}): Promise<void> => {
     const url = new URL("http://localhost:8080/api/v1/lakes/markers");
     url.searchParams.append("lng", coords[0].toString());
     url.searchParams.append("lat", coords[1].toString());
+    url.searchParams.append("radius", "1");
 
     setIsLoading(true);
-    console.log("fetching lake markers");
 
     try {
       const response = await axios.get(url.toString(), options)
       const newLakeMarkers = response.data;
+      console.log("Number of new lake markers: ", newLakeMarkers.length);
+
       const mergedLakeMarkers = [...lakeMarkers, ...newLakeMarkers].reduce((acc, cur) => {
         const index = acc.findIndex((marker: LakeMarker) => marker.id === cur.id);
         if (index === -1) {
@@ -42,10 +44,9 @@ const useLakes = (initialCenter: [number, number]) => {
     }
   }
 
-  console.log("number of lake markers: ", lakeMarkers.length);
+  const memoizedFetchLakeMarkers = useCallback(fetchLakeMarkers, [lakeMarkers]);
 
-
-  return { lakeMarkers, isLoading, error, fetchLakeMarkers, fetchLakeInfo };
+  return { lakeMarkers, isLoading, error, fetchLakeMarkers: memoizedFetchLakeMarkers, fetchLakeInfo };
 
 };
 
