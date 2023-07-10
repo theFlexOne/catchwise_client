@@ -1,6 +1,6 @@
 import Fish from './Fish';
 
-interface Lake {
+type Lake = {
   id: number;
   name: string;
   geometry: {

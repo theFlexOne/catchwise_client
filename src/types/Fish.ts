@@ -1,4 +1,4 @@
-export type Fish = {
+type Fish = {
   id: number;
   name: string;
   genus: string;
@@ -7,3 +7,5 @@ export type Fish = {
   imgUrl: string;
   locationImgUrl: string;
 };
+
+export default Fish;

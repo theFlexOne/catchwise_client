@@ -1,5 +1,3 @@
-import { LngLat, LngLatLike } from "mapbox-gl";
-
 type LakeMarker = {
   id: number;
   name: string;

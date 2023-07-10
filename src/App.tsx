@@ -17,17 +17,13 @@ const links: Link[] = [
 
 
 function App() {
-  const [coords, coordsError] = useUserLocation();
-
-  return coords && (
-    <MapProvider coords={coords}>
+  return (
+    <MapProvider>
       <RootLayout links={links}>
         <LandingPage />
       </RootLayout>
     </MapProvider>
   )
-
-
 }
 
 export default App

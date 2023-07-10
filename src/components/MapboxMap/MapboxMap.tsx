@@ -7,7 +7,7 @@ import Dot from './MarkerSymbols/Dot';
 
 
 const MapboxMap = () => {
-  const { lakeMarkers, mapRef, onMove, onMarkerClick, initialViewState } = useMap();
+  const { lakeMarkers, mapRef, onMove, onLoad, onMarkerClick, initialViewState } = useMap();
 
 
 
@@ -25,13 +25,14 @@ const MapboxMap = () => {
         transition: 'all 0.3s ease',
       }}
       onMove={onMove}
-    // onLoad={() => onLoad(center)}
+      onLoad={onLoad}
     >
       {lakeMarkers.map((marker: LakeMarker) => (
         <Fragment key={marker.id}>
           <Marker
+            data-lake-id={marker.id}
             style={{ cursor: 'pointer' }}
-            // onClick={() => onMarkerClick(marker)}
+            onClick={() => onMarkerClick(marker.id)}
             longitude={marker.coordinates[0]}
             latitude={marker.coordinates[1]}
           >

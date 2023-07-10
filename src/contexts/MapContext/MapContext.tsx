@@ -1,52 +1,79 @@
 import { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import LakeMarker from '../../types/LakeMarker';
-import { LngLatBounds, MapboxEvent, ViewState, ViewStateChangeEvent } from 'react-map-gl';
+import { LngLat, LngLatBounds, LngLatLike, MapboxEvent, ViewState, ViewStateChangeEvent } from 'react-map-gl';
 import Lake from '../../types/Lake';
 import useLakes from '../../hooks/useLakes';
 import { MapRef } from 'react-map-gl';
 import { point, distance, inside, bboxPolygon } from '@turf/turf';
 import axios, { CanceledError } from 'axios';
+import useUserLocation from '../../hooks/useUserLocation';
+import LakeNameObject from '../../types/LakeName';
+
+type MapProviderProps = {
+  children: React.ReactNode,
+}
+
+type MapContextType = {
+  lakeMarkers: LakeMarker[];
+  mapRef: React.MutableRefObject<any>;
+  currentLake: Lake | null;
+  initialViewState: ViewState;
+  fetchLakeMarkers: (coords: [number, number], options?: Options) => void;
+  onMove?: (event: ViewStateChangeEvent) => void;
+  onMarkerClick: (id: number) => void;
+  onSearch?: (lakeId: number) => void;
+  onLoad?: (event: MapboxEvent) => void;
+}
+
+type Options = {
+  signal?: AbortSignal | undefined;
+  [key: string]: any;
+}
+
 
 const zoom = {
   MIN: 0,
   MAX: 15,
-  current: 10,
+  INITIAL: 10,
 }
 
 
 export const MapContext = createContext<MapContextType | null>(null);
 
-export const MapProvider = ({ children, coords }: MapProviderProps) => {
+export const MapProvider = ({ children }: MapProviderProps) => {
+  const [coords] = useUserLocation();
   const [lakeMarkers, setLakeMarkers] = useState<LakeMarker[]>([]);
   const [currentLake, setCurrentLake] = useState<Lake | null>(null);
   const [bounds, setBounds] = useState<LngLatBounds | null>(null);
 
   const mapRef = useRef<MapRef | null>(null);
 
+  const initialViewState: ViewState = {
+    longitude: coords?.[0] || 0,
+    latitude: coords?.[1] || 0,
+    zoom: zoom.INITIAL,
+    bearing: 0,
+    pitch: 0,
+    padding: { top: 0, bottom: 0, left: 0, right: 0 },
+  };
+
+
   const onMove = (event: ViewStateChangeEvent): void => {
     const newBounds = event.target.getBounds();
     setBounds(newBounds);
   };
-
-
-  // const onMarkerClick = (marker: LakeMarker): void => {
-  //   const map = mapRef.current;
-  //   if (!map) return;
-  //   map.flyTo({
-  //     center: marker.coordinates,
-  //     zoom: 13,
-  //     speed: 1,
-  //     curve: 2,
-  //   });
-  //   fetchLakeInfo(marker.id);
-
-  // };
-
-  // const onSearch = (lakeId: number): void => {
-  //   const marker = lakeMarkers.find((marker) => marker.id === lakeId);
-  //   if (!marker) return;
-  //   onMarkerClick(marker);
-  // };
+  const onLoad = (event: MapboxEvent): void => {
+    const map = event.target;
+    setBounds(map.getBounds());
+  };
+  const onMarkerClick = (id: number) => {
+    fetchLakeInfo(id).then(lakeInfo => {
+      if (!lakeInfo) throw new Error("Lake info not found");
+      setCurrentLake(lakeInfo)
+    }).catch(error => {
+      console.error(error);
+    });
+  };
 
 
   const fetchLakeMarkers = async (coords: [number, number], options: Options = {}): Promise<void> => {
@@ -58,8 +85,6 @@ export const MapProvider = ({ children, coords }: MapProviderProps) => {
     try {
       const response = await axios.get(url.toString(), options)
       const newLakeMarkers = response.data;
-      console.log("Number of new lake markers: ", newLakeMarkers.length);
-
       setLakeMarkers(prev => [...prev, ...newLakeMarkers].reduce((acc, cur) => {
         const index = acc.findIndex((marker: LakeMarker) => marker.id === cur.id);
         if (index === -1) {
@@ -73,8 +98,21 @@ export const MapProvider = ({ children, coords }: MapProviderProps) => {
     }
   }
 
+  async function fetchLakeInfo(lakeId: number): Promise<Lake | undefined> {
+    const url = new URL(`http://localhost:8080/api/v1/lakes/${lakeId}`);
+    try {
+      const response = await axios.get(url.toString());
+      return response.data;
+    } catch (error) {
+      if (error instanceof CanceledError) return;
+      console.error(error);
+    }
+  }
+
+
   const currentLakeMarkers = (() => {
-    const bbox = bounds ? bboxPolygon([bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()]) : null;
+    if (!bounds) return [];
+    const bbox = bboxPolygon(bounds.toArray().flat());
     if (!bbox) return [];
     return lakeMarkers.filter((marker) => {
       const markerPoint = point(marker.coordinates);
@@ -82,28 +120,14 @@ export const MapProvider = ({ children, coords }: MapProviderProps) => {
     });
   })()
 
-  console.log(mapRef.current?.getZoom());
-
-  console.log("Number of current lake markers: ", currentLakeMarkers.length);
-
-
-  const initialViewState: ViewState = useMemo(() => ({
-    latitude: coords?.lat || 0,
-    longitude: coords?.lng || 0,
-    zoom: zoom.current,
-    bearing: 0,
-    pitch: 0,
-    padding: { top: 0, bottom: 0, left: 0, right: 0 },
-  }), [coords?.lat, coords?.lng]);
-
-
   useEffect(() => {
-    fetchLakeMarkers([initialViewState.longitude, initialViewState.latitude]);
-  }, [initialViewState.latitude, initialViewState.longitude]);
+    if (!coords) return;
+    fetchLakeMarkers([coords[0], coords[1]]);
+  }, [coords]);
 
+  lakeMarkers.length > 0 && console.log(lakeMarkers);
 
-
-  return (
+  return coords && (
     <MapContext.Provider value={{
       lakeMarkers: currentLakeMarkers,
       fetchLakeMarkers,
@@ -111,7 +135,8 @@ export const MapProvider = ({ children, coords }: MapProviderProps) => {
       initialViewState,
       currentLake,
       onMove,
-      // onMarkerClick,
+      onLoad,
+      onMarkerClick,
       // onSearch
     }}>
       {children}
@@ -154,28 +179,5 @@ function calculateDistance([lng1, lat1]: number[], [lng2, lat2]: number[]): numb
 
   const distance = R * c; // Distance in meters
   return distance;
-}
-
-type MapProviderProps = {
-  children: React.ReactNode,
-  coords?: { lat: number, lng: number }
-}
-
-
-type MapContextType = {
-  lakeMarkers: LakeMarker[];
-  mapRef: React.MutableRefObject<any>;
-  currentLake: Lake | null;
-  initialViewState: ViewState;
-  fetchLakeMarkers: (coords: [number, number], options?: Options) => void;
-  onMove?: (event: ViewStateChangeEvent) => void;
-  onMarkerClick?: (marker: LakeMarker) => void;
-  onSearch?: (lakeId: number) => void;
-  onLoad?: (event: MapboxEvent) => void;
-}
-
-type Options = {
-  signal?: AbortSignal | undefined;
-  [key: string]: any;
 }
 
