@@ -1,18 +1,15 @@
 import { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import LakeMarker from '../../types/LakeMarker';
-import { LngLat, LngLatBounds, LngLatLike, MapboxEvent, ViewState, ViewStateChangeEvent } from 'react-map-gl';
+import { LngLatBounds, MapboxEvent, MarkerDragEvent, ViewState, ViewStateChangeEvent } from 'react-map-gl';
 import Lake from '../../types/Lake';
-import useLakes from '../../hooks/useLakes';
 import { MapRef } from 'react-map-gl';
-import { point, distance, inside, bboxPolygon } from '@turf/turf';
+import { point, inside, bboxPolygon } from '@turf/turf';
 import axios, { CanceledError } from 'axios';
 import useUserLocation from '../../hooks/useUserLocation';
-import LakeNameObject from '../../types/LakeName';
 
 type MapProviderProps = {
   children: React.ReactNode,
 }
-
 type MapContextType = {
   lakeMarkers: LakeMarker[];
   mapRef: React.MutableRefObject<any>;
@@ -24,19 +21,16 @@ type MapContextType = {
   onSearch?: (lakeId: number) => void;
   onLoad?: (event: MapboxEvent) => void;
 }
-
 type Options = {
   signal?: AbortSignal | undefined;
   [key: string]: any;
 }
-
 
 const zoom = {
   MIN: 0,
   MAX: 15,
   INITIAL: 10,
 }
-
 
 export const MapContext = createContext<MapContextType | null>(null);
 
@@ -74,6 +68,9 @@ export const MapProvider = ({ children }: MapProviderProps) => {
       console.error(error);
     });
   };
+  const onSearch = (lakeId: number) => {
+    console.log(lakeId);
+  };
 
 
   const fetchLakeMarkers = async (coords: [number, number], options: Options = {}): Promise<void> => {
@@ -97,7 +94,6 @@ export const MapProvider = ({ children }: MapProviderProps) => {
       console.error(error);
     }
   }
-
   async function fetchLakeInfo(lakeId: number): Promise<Lake | undefined> {
     const url = new URL(`http://localhost:8080/api/v1/lakes/${lakeId}`);
     try {
@@ -137,7 +133,7 @@ export const MapProvider = ({ children }: MapProviderProps) => {
       onMove,
       onLoad,
       onMarkerClick,
-      // onSearch
+      onSearch,
     }}>
       {children}
     </MapContext.Provider >

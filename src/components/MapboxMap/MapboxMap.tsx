@@ -1,15 +1,18 @@
 import Map, { Marker } from 'react-map-gl';
-import { Fragment } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import useMap from '../../contexts/MapContext/useMap';
 import LakeMarker from '../../types/LakeMarker';
 import LakeSymbol from './MarkerSymbols/LakeSymbol';
 import Dot from './MarkerSymbols/Dot';
 
 
+
 const MapboxMap = () => {
   const { lakeMarkers, mapRef, onMove, onLoad, onMarkerClick, initialViewState } = useMap();
 
-
+  // useEffect(() => {
+  //   setControlledMarkers(lakeMarkers);
+  // }, [lakeMarkers]);
 
 
   return (

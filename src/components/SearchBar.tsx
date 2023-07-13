@@ -10,17 +10,19 @@ const SearchBar = () => {
   function handleSubmit(e: FormEvent<HTMLFormElement>): void {
     e.preventDefault();
     try {
-
       const datalistElement = document.getElementById("names") as HTMLDataListElement;
       const option: HTMLOptionElement | null = datalistElement.querySelector(`option[value="${value}"]`);
-      if (!option) throw new Error("No option found");
-      const lakeId = option.dataset.id;
+      const lakeId = option?.dataset.id;
       if (!lakeId) throw new Error("No lake id found");
-      onSearch(parseInt(lakeId));
+
+      onSearch && onSearch(+lakeId);
     } catch (err) {
       console.log(err);
     }
   }
+
+  console.log(lakeMarkers);
+
 
 
 
