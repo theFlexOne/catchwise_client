@@ -1,6 +1,6 @@
-import { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, useEffect, useRef, useState } from 'react';
 import LakeMarker from '../../types/LakeMarker';
-import { LngLatBounds, MapboxEvent, MarkerDragEvent, ViewState, ViewStateChangeEvent } from 'react-map-gl';
+import { LngLatBounds, MapboxEvent, ViewState, ViewStateChangeEvent } from 'react-map-gl';
 import Lake from '../../types/Lake';
 import { MapRef } from 'react-map-gl';
 import { point, inside, bboxPolygon } from '@turf/turf';
@@ -16,6 +16,7 @@ type MapContextType = {
   currentLake: Lake | null;
   initialViewState: ViewState;
   fetchLakeMarkers: (coords: [number, number], options?: Options) => void;
+  fetchLocationNames: () => Promise<LocationName[]>;
   onMove?: (event: ViewStateChangeEvent) => void;
   onMarkerClick: (id: number) => void;
   onSearch?: (lakeId: number) => void;
@@ -23,8 +24,19 @@ type MapContextType = {
 }
 type Options = {
   signal?: AbortSignal | undefined;
-  [key: string]: any;
+  headers?: {
+    Authorization?: string | undefined;
+  };
+  [key: string]: unknown;
 }
+
+export type LocationName = {
+  id: number;
+  name: string;
+  county: string;
+  state: string;
+}
+
 
 const zoom = {
   MIN: 0,
@@ -74,10 +86,10 @@ export const MapProvider = ({ children }: MapProviderProps) => {
 
 
   const fetchLakeMarkers = async (coords: [number, number], options: Options = {}): Promise<void> => {
-    const url = new URL("http://localhost:8080/api/v1/lakes/markers");
+    const url = new URL("http://localhost:8080/api/v1/markers");
     url.searchParams.append("lng", coords[0].toString());
     url.searchParams.append("lat", coords[1].toString());
-    url.searchParams.append("radius", "10");
+    url.searchParams.append("radius", "3");
 
     try {
       const response = await axios.get(url.toString(), options)
@@ -105,6 +117,19 @@ export const MapProvider = ({ children }: MapProviderProps) => {
     }
   }
 
+  async function fetchLocationNames(): Promise<LocationName[]> {
+    const url = new URL("http://localhost:8080/api/v1/location-names");
+    try {
+      const response = await axios.get(url.toString());
+      return response.data as LocationName[];
+    } catch (error) {
+      if (error instanceof CanceledError) return [];
+      console.error(error);
+      return [];
+    }
+  }
+
+
 
   const currentLakeMarkers = (() => {
     if (!bounds) return [];
@@ -127,6 +152,7 @@ export const MapProvider = ({ children }: MapProviderProps) => {
     <MapContext.Provider value={{
       lakeMarkers: currentLakeMarkers,
       fetchLakeMarkers,
+      fetchLocationNames,
       mapRef,
       initialViewState,
       currentLake,

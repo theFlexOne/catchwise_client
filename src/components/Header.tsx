@@ -1,17 +1,18 @@
-import { useState } from "react";
+import useAuth from "../contexts/AuthContext/useAuth";
 import SearchBar from "./SearchBar";
+import { NavLink } from "react-router-dom";
+import LoginNavLink from "./LoginNavLink";
+import { MouseEvent } from "react";
 
-interface Link {
-  url: string;
-  label: string;
-}
 
-interface HeaderProps {
-  links: Link[];
-}
+const Header = () => {
+  const { isAuthorized, logout } = useAuth();
 
-const Header: React.FC<HeaderProps> = ({ links }) => {
 
+  function handleLogout(e: MouseEvent<HTMLAnchorElement>) {
+    e.preventDefault();
+    logout();
+  }
 
   return (
     <header className="px-2 py-2 flex items-center bg-amber-500/80 text-lime-950 text-lg font-semibold">
@@ -21,11 +22,19 @@ const Header: React.FC<HeaderProps> = ({ links }) => {
       </div>
       <nav className="ml-auto">
         <ul className="flex gap-2 uppercase">
-          {links.map(({ url, label }) => (
-            <li key={url}>
-              <a href={url}>{label}</a>
-            </li>
-          ))}
+          <li>
+            {isAuthorized ? (
+              <NavLink
+                to="/logout"
+                className=""
+                onClick={handleLogout}
+              >
+                Logout
+              </NavLink>
+            ) : (
+              <LoginNavLink />
+            )}
+          </li>
         </ul>
       </nav>
     </header>

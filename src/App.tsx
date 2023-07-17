@@ -3,25 +3,14 @@ import RootLayout from './layouts/RootLayout';
 import useUserLocation from './hooks/useUserLocation';
 import LandingPage from './pages/LandingPage';
 import { MapProvider } from './contexts/MapContext/MapContext';
+import Router from './Router';
 
-type Link = {
-  url: string;
-  label: string;
-};
-
-const links: Link[] = [
-  { url: "#1", label: "Home" },
-  { url: "#2", label: "About" },
-  { url: "#3", label: "Contact" },
-];
 
 
 function App() {
   return (
     <MapProvider>
-      <RootLayout links={links}>
-        <LandingPage />
-      </RootLayout>
+      <Router />
     </MapProvider>
   )
 }

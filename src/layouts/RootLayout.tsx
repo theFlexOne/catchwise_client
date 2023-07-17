@@ -1,16 +1,13 @@
 import Header from "../components/Header";
+import { Outlet } from "react-router-dom";
 
-interface RootLayoutProps {
-  children: React.ReactNode;
-  links: { url: string; label: string }[];
-}
 
-const RootLayout = ({ children, links }: RootLayoutProps) => {
+const RootLayout = () => {
   return (
     <div className="h-screen bg-neutral-800 flex flex-col">
-      <Header links={links} />
+      <Header />
       <div className="grow">
-        {children}
+        <Outlet />
       </div>
     </div>
   );

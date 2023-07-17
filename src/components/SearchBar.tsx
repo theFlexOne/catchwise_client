@@ -1,11 +1,13 @@
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import useMap from "../contexts/MapContext/useMap"
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline"
+import { LocationName } from "../contexts/MapContext/MapContext";
 
 
 const SearchBar = () => {
   const [value, setValue] = useState<string>("");
-  const { lakeMarkers, onSearch } = useMap();
+  const [locationNames, setLocationNames] = useState<LocationName[]>([]);
+  const { fetchLocationNames, onSearch } = useMap();
 
   function handleSubmit(e: FormEvent<HTMLFormElement>): void {
     e.preventDefault();
@@ -21,9 +23,11 @@ const SearchBar = () => {
     }
   }
 
-  console.log(lakeMarkers);
+  function handleSearchbarChange(e: ChangeEvent<HTMLInputElement>): void {
+    throw new Error("Function not implemented.");
+  }
 
-
+  console.log(locationNames);
 
 
   return (
@@ -34,7 +38,7 @@ const SearchBar = () => {
         type="text"
         id="searchInput"
         value={value}
-        onChange={e => setValue(e.target.value)}
+        onChange={handleSearchbarChange}
         className="rounded px-2 py-1 text-sm"
         placeholder="Search for a lake"
         list="names"
@@ -44,7 +48,7 @@ const SearchBar = () => {
         <MagnifyingGlassIcon className="w-5 h-5 stroke-[2px] stroke-zinc-900" />
       </button>
       <datalist id="names">
-        {lakeMarkers.length && lakeMarkers.sort((a, b) => a.name.localeCompare(b.name))
+        {locationNames.length && locationNames.sort((a, b) => a.name.localeCompare(b.name))
           .map((lake) => (
             <option
               key={lake.id}
