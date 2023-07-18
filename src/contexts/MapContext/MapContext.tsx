@@ -86,7 +86,7 @@ export const MapProvider = ({ children }: MapProviderProps) => {
 
 
   const fetchLakeMarkers = async (coords: [number, number], options: Options = {}): Promise<void> => {
-    const url = new URL("http://localhost:8080/api/v1/markers");
+    const url = new URL("http://localhost:8080/api/v1/locations/markers");
     url.searchParams.append("lng", coords[0].toString());
     url.searchParams.append("lat", coords[1].toString());
     url.searchParams.append("radius", "3");
@@ -116,7 +116,6 @@ export const MapProvider = ({ children }: MapProviderProps) => {
       console.error(error);
     }
   }
-
   async function fetchLocationNames(): Promise<LocationName[]> {
     const url = new URL("http://localhost:8080/api/v1/location-names");
     try {

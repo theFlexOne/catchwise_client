@@ -1,28 +1,42 @@
-import {
-  createBrowserRouter,
-  createRoutesFromElements,
-  RouterProvider,
-  Routes,
-  Route
-} from "react-router-dom";
-import RootLayout from "./layouts/RootLayout";
-import LandingPage from "./pages/LandingPage";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
+import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
-import { AuthProvider } from './contexts/AuthContext/AuthContext';
+import Root from "./components/Root";
+import Signup from "./pages/Signup";
 
 
-const router = createBrowserRouter(
-  createRoutesFromElements(
-    <Route path="/" element={<AuthProvider><RootLayout /></AuthProvider>}>
-      <Route index={true} element={<LandingPage />} />
-      <Route path="login" element={<Login />} />
-    </Route>
-  )
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Root />,
+    children: [
+      {
+        index: true,
+        element: <Navigate to="dashboard" />,
+      },
+      {
+        path: "dashboard",
+        element: <Dashboard />,
+      },
+      {
+        path: "login",
+        element: <Login />,
+      },
+      {
+        path: "signup",
+        element: <Signup />,
+      }
+    ]
+  }
+]
 );
 
 
 
 const Router = () => {
+
+
+
   return (
     <RouterProvider router={router} />
   )

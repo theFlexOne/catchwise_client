@@ -12,10 +12,7 @@ interface AuthContextProps {
 export const AuthContext = createContext<AuthContextProps | null>(null);
 
 export const AuthProvider = ({ children }: { children?: React.ReactNode }) => {
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
-
-
+  const [accessToken, setAccessToken] = useState<string | null>(localStorage.getItem('accessToken'));
 
   async function login({ username, password }: { username: string, password: string }): Promise<boolean> {
     const loginUrl = 'http://localhost:8080/api/v1/auth/login';
@@ -24,12 +21,7 @@ export const AuthProvider = ({ children }: { children?: React.ReactNode }) => {
       const response = await axios.post(loginUrl, body);
       if (response.status !== 200) throw new Error("Login failed:\n" + response.statusText);
       localStorage.setItem('accessToken', response.data.accessToken)
-      setIsAuthorized(true);
-      axios.interceptors.request.use((config) => {
-        config.headers.Authorization = `Bearer ${localStorage.getItem('accessToken')}`;
-        return config;
-      });
-      console.log("Login successful");
+      setAccessToken(response.data.accessToken);
       return true;
     } catch (error) {
       console.error(error);

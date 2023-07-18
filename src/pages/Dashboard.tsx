@@ -3,7 +3,7 @@ import { MapProvider } from '../contexts/MapContext/MapContext';
 import useMap from '../contexts/MapContext/useMap';
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-const LandingPage = () => {
+const Dashboard = () => {
 
   const { currentLake } = useMap();
 
@@ -30,5 +30,5 @@ const LandingPage = () => {
   )
 };
 
-export default LandingPage;
+export default Dashboard;
 
