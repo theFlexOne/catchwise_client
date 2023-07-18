@@ -1,12 +1,10 @@
-import { createContext } from 'react';
+import { createContext, useEffect } from 'react';
 import { useState } from 'react';
 import axios from 'axios';
 
 interface AuthContextProps {
   login: ({ username, password }: { username: string, password: string }) => Promise<boolean>;
   logout: () => void;
-  isAuthorized: boolean;
-  currentUser: any;
 }
 
 export const AuthContext = createContext<AuthContextProps | null>(null);
@@ -33,18 +31,24 @@ export const AuthProvider = ({ children }: { children?: React.ReactNode }) => {
     const logoutUrl = 'http://localhost:8080/api/v1/auth/logout';
     try {
       await axios.post(logoutUrl);
-      setCurrentUser(null);
-      setIsAuthorized(false);
+      setAccessToken(null);
       localStorage.removeItem('accessToken');
-      console.log("Logout successful");
     } catch (error) {
       console.error(error);
     }
   }
 
+  useEffect(() => {
+    if (accessToken) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+    } else {
+      delete axios.defaults.headers.common['Authorization'];
+    }
+  }, [accessToken]);
+
 
   return (
-    <AuthContext.Provider value={{ login, logout, currentUser, isAuthorized }}>
+    <AuthContext.Provider value={{ login, logout }}>
       {children}
     </AuthContext.Provider>
   );
