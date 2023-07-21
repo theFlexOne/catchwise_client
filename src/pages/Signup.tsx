@@ -1,46 +1,27 @@
 import { useState } from "react";
+import Form from "../components/Form";
+import TextField from '../components/TextField';
 
 const Signup = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    console.log({ username, password });
-
+    console.log({ email, password });
   }
 
   return (
     <div className='h-full flex justify-center items-center'>
       <div className='border rounded p-2 h-fit'>
-        <form onSubmit={handleSubmit} className='flex flex-col gap-2 items-center text-white'>
-          <div className="flex gap-2">
-            <label htmlFor="username">Username</label>
-            <input
-              className='text-black'
-              type="text"
-              name="username"
-              id="username"
-              value={username}
-              onChange={e => setUsername(e.target.value)}
-            />
-          </div>
-          <div className="flex gap-2">
-            <label htmlFor="password">Password</label>
-            <input
-              className='text-black'
-              type="password"
-              name="password"
-              id="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-            />
-          </div>
+        <Form onSubmit={handleSubmit} header="Signup">
+          <TextField id='email' label='Email' name='email' placeholder='example@aol.com' value={email} onChange={e => setEmail(e.target.value)} />
+          <TextField id='password' label='Password' name='password' type='password' value={password} onChange={e => setPassword(e.target.value)} />
           <button
             type='submit'
-            className="px-2 py-1 rounded bg-neutral-600 hover:bg-neutral-700"
-          >Login</button>
-        </form>
+            className="py-3 rounded bg-amber-600 hover:bg-amber-700 text-white font-medium w-full"
+          >Signup</button>
+        </Form>
       </div>
     </div>
   )

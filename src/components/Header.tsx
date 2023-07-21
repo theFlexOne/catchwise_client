@@ -1,12 +1,12 @@
 import useAuth from "../contexts/AuthContext/useAuth";
-import SearchBar from "./SearchBar";
 import { NavLink } from "react-router-dom";
 import LoginNavLink from "./LoginNavLink";
 import { MouseEvent } from "react";
+import Logo from './Logo';
 
 
 const Header = () => {
-  const { isAuthorized, logout } = useAuth();
+  const { isLoggedIn, logout } = useAuth();
 
 
   function handleLogout(e: MouseEvent<HTMLAnchorElement>) {
@@ -15,27 +15,24 @@ const Header = () => {
   }
 
   return (
-    <header className="px-2 py-2 flex items-center bg-amber-500/80 text-lime-950 text-lg font-semibold">
-      <div className="flex items-center mr-auto">LOGO HERE</div>
-      <div className="mx-auto flex gap-4">
-        <SearchBar />
+    <header className="px-8 py-3 flex items-center bg-amber-500 text-lime-950 text-lg font-semibold uppercase h-20">
+      <div className="flex items-center mr-auto max-h-full">
+        <Logo />
       </div>
       <nav className="ml-auto">
-        <ul className="flex gap-2 uppercase">
-          <li>
-            {isAuthorized ? (
-              <NavLink
-                to="/logout"
-                className=""
-                onClick={handleLogout}
-              >
-                Logout
-              </NavLink>
-            ) : (
-              <LoginNavLink />
-            )}
-          </li>
-        </ul>
+        <div>
+          {isLoggedIn ? (
+            <NavLink
+              to="/logout"
+              className=""
+              onClick={handleLogout}
+            >
+              Logout
+            </NavLink>
+          ) : (
+            <LoginNavLink />
+          )}
+        </div>
       </nav>
     </header>
   );

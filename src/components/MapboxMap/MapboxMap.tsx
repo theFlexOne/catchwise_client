@@ -1,14 +1,13 @@
 import Map, { Marker } from 'react-map-gl';
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment } from 'react';
 import useMap from '../../contexts/MapContext/useMap';
-import LakeMarker from '../../types/LakeMarker';
-import LakeSymbol from './MarkerSymbols/LakeSymbol';
+import MapMarker from '../../types/MapMarker';
 import Dot from './MarkerSymbols/Dot';
 
 
 
 const MapboxMap = () => {
-  const { lakeMarkers, mapRef, onMove, onLoad, onMarkerClick, initialViewState } = useMap();
+  const { currentMapMarkers, mapRef, onMove, onLoad, onMarkerClick, initialViewState } = useMap();
 
   // useEffect(() => {
   //   setControlledMarkers(lakeMarkers);
@@ -30,7 +29,7 @@ const MapboxMap = () => {
       onMove={onMove}
       onLoad={onLoad}
     >
-      {lakeMarkers.map((marker: LakeMarker) => (
+      {currentMapMarkers.map((marker: MapMarker) => (
         <Fragment key={marker.id}>
           <Marker
             data-lake-id={marker.id}
@@ -39,7 +38,7 @@ const MapboxMap = () => {
             longitude={marker.coordinates[0]}
             latitude={marker.coordinates[1]}
           >
-            <Dot /> :
+            <Dot />
           </Marker>
         </Fragment>
       ))}

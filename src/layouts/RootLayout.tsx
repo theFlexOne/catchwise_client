@@ -4,7 +4,7 @@ import { Outlet } from "react-router-dom";
 
 const RootLayout = ({ children }: any) => {
   return (
-    <div className="h-screen bg-neutral-800 flex flex-col">
+    <div className="h-screen bg-white flex flex-col">
       <Header />
       <div className="grow">
         {children}

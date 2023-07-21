@@ -1,8 +1,8 @@
-type LakeMarker = {
+type MapMarker = {
   id: number;
   name: string;
   coordinates: [number, number];
   type?: string;
 }
 
-export default LakeMarker;
+export default MapMarker;

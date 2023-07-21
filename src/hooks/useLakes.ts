@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import axios, { CanceledError } from 'axios';
 import LakeNameObject from '../types/LakeName';
-import LakeMarker from '../types/LakeMarker';
+import MapMarker from '../types/MapMarker';
 
 type Options = {
   signal?: AbortSignal | undefined;
@@ -9,7 +9,7 @@ type Options = {
 }
 
 const useLakes = (initialCenter: [number, number]) => {
-  const [lakeMarkers, setLakeMarkers] = useState<LakeMarker[]>([]);
+  const [lakeMarkers, setLakeMarkers] = useState<MapMarker[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | undefined>(undefined);
 
@@ -27,12 +27,12 @@ const useLakes = (initialCenter: [number, number]) => {
       console.log("Number of new lake markers: ", newLakeMarkers.length);
 
       const mergedLakeMarkers = [...lakeMarkers, ...newLakeMarkers].reduce((acc, cur) => {
-        const index = acc.findIndex((marker: LakeMarker) => marker.id === cur.id);
+        const index = acc.findIndex((marker: MapMarker) => marker.id === cur.id);
         if (index === -1) {
           acc.push(cur);
         }
         return acc;
-      }, [] as LakeMarker[]);
+      }, [] as MapMarker[]);
 
 
       setLakeMarkers(mergedLakeMarkers);

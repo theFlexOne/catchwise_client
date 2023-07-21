@@ -3,6 +3,8 @@ import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Root from "./components/Root";
 import Signup from "./pages/Signup";
+import Landing from "./pages/Landing";
+import MapPage from "./pages/MapPage";
 
 
 const router = createBrowserRouter([
@@ -12,11 +14,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Navigate to="dashboard" />,
-      },
-      {
-        path: "dashboard",
-        element: <Dashboard />,
+        element: <Landing />,
       },
       {
         path: "login",
@@ -25,7 +23,15 @@ const router = createBrowserRouter([
       {
         path: "signup",
         element: <Signup />,
-      }
+      },
+      {
+        path: "map",
+        element: <MapPage />,
+      },
+      {
+        path: "home",
+        element: <Dashboard />,
+      },
     ]
   }
 ]
