@@ -6,11 +6,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 interface AuthContextProps {
   login: ({ email, password }: { email: string, password: string }) => Promise<boolean>;
   logout: () => void;
-  signUp: ({ email, password }: { email: string, password: string }) => Promise<boolean>;
+  signup: ({ email, password }: { email: string, password: string }) => Promise<boolean>;
   isLoggedIn: boolean;
 }
 
 const OPEN_ROUTES = [
+  '/',
+  '/home',
   '/login',
   '/signup',
   '/map'
@@ -22,8 +24,15 @@ export const AuthProvider = ({ children }: { children?: React.ReactNode }) => {
   const [accessToken, setAccessToken] = useState<string | null>(localStorage.getItem('accessToken'));
   const [error, setError] = useState<string | null>(null);
 
-  const { pathname } = useLocation();
+  const location = useLocation();
+  const pathname = location.pathname;
+
+  console.log("location", location);
+
+
   const navigate = useNavigate();
+
+
 
   console.log(location);
 
@@ -54,12 +63,14 @@ export const AuthProvider = ({ children }: { children?: React.ReactNode }) => {
     }
   }, [navigate])
 
-  async function signUp({ email, password }: { email: string, password: string }) {
+  async function signup({ email, password }: { email: string, password: string }) {
     const signUpUrl = 'http://localhost:8080/api/v1/auth/signup';
     const body = { email, password };
     try {
       const response = await axios.post(signUpUrl, body);
       if (response.status !== 200) throw new Error("Sign up failed:\n" + response.statusText);
+      console.log(response.data);
+
       localStorage.setItem('accessToken', response.data.accessToken)
       setAccessToken(response.data.accessToken);
       return true;
@@ -79,8 +90,13 @@ export const AuthProvider = ({ children }: { children?: React.ReactNode }) => {
   }, [accessToken]);
 
   useEffect(() => {
+    console.log("pathname", pathname);
+
     if (!OPEN_ROUTES.includes(pathname) && !accessToken) {
       navigate('/login');
+    }
+    if (pathname === '/' && accessToken) {
+      navigate('/dashboard');
     }
   }, [pathname, accessToken, navigate]);
 
@@ -102,7 +118,7 @@ export const AuthProvider = ({ children }: { children?: React.ReactNode }) => {
 
 
   return (
-    <AuthContext.Provider value={{ login, logout, signUp, isLoggedIn: !!accessToken }}>
+    <AuthContext.Provider value={{ login, logout, signup, isLoggedIn: !!accessToken }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/LogIn";
 import Root from "./components/Root";
@@ -14,6 +14,10 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
+        element: <Navigate to="/home" />,
+      },
+      {
+        path: "home",
         element: <Landing />,
       },
       {
@@ -21,7 +25,7 @@ const router = createBrowserRouter([
         element: <MapPage />,
       },
       {
-        path: "home",
+        path: "dashboard",
         element: <Dashboard />,
       },
       {

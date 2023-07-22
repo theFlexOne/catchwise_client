@@ -3,7 +3,6 @@ import useAuth from '../contexts/AuthContext/useAuth';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Form from '../components/Form';
 import TextField from '../components/TextField';
-import Footer from '../components/Footer';
 
 const Login = () => {
   const [email, setEmail] = useState('');

@@ -1,14 +1,27 @@
 import { useState } from "react";
 import Form from "../components/Form";
 import TextField from '../components/TextField';
+import useAuth from "../contexts/AuthContext/useAuth";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const SignUp = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  const { state } = useLocation();
+  const navigate = useNavigate();
+
+  const { signup } = useAuth();
+
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     console.log({ email, password });
+    const isSignedUp = await signup({ email, password });
+    if (isSignedUp) {
+      const redirectPath = state?.redirectPath || '/';
+      navigate(redirectPath);
+    }
   }
 
   return (
