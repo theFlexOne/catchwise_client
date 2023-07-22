@@ -1,4 +1,4 @@
-import { createContext, useEffect } from 'react';
+import { createContext, useEffect, useCallback } from 'react';
 import { useState } from 'react';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 interface AuthContextProps {
   login: ({ email, password }: { email: string, password: string }) => Promise<boolean>;
   logout: () => void;
+  signUp: ({ email, password }: { email: string, password: string }) => Promise<boolean>;
   isLoggedIn: boolean;
 }
 
@@ -26,7 +27,6 @@ export const AuthProvider = ({ children }: { children?: React.ReactNode }) => {
 
   console.log(location);
 
-
   async function login({ email, password }: { email: string, password: string }): Promise<boolean> {
     const loginUrl = 'http://localhost:8080/api/v1/auth/login';
     const body = { email, password };
@@ -41,7 +41,8 @@ export const AuthProvider = ({ children }: { children?: React.ReactNode }) => {
       return false;
     }
   }
-  async function logout() {
+
+  const logout = useCallback(async function () {
     const logoutUrl = 'http://localhost:8080/api/v1/auth/logout';
     try {
       await axios.post(logoutUrl);
@@ -51,7 +52,23 @@ export const AuthProvider = ({ children }: { children?: React.ReactNode }) => {
     } catch (error) {
       console.error(error);
     }
+  }, [navigate])
+
+  async function signUp({ email, password }: { email: string, password: string }) {
+    const signUpUrl = 'http://localhost:8080/api/v1/auth/signup';
+    const body = { email, password };
+    try {
+      const response = await axios.post(signUpUrl, body);
+      if (response.status !== 200) throw new Error("Sign up failed:\n" + response.statusText);
+      localStorage.setItem('accessToken', response.data.accessToken)
+      setAccessToken(response.data.accessToken);
+      return true;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
   }
+
 
   useEffect(() => {
     if (accessToken) {
@@ -81,11 +98,11 @@ export const AuthProvider = ({ children }: { children?: React.ReactNode }) => {
         throw error;
       }
     }
-  }, [navigate])
+  }, [navigate, logout])
 
 
   return (
-    <AuthContext.Provider value={{ login, logout, isLoggedIn: !!accessToken }}>
+    <AuthContext.Provider value={{ login, logout, signUp, isLoggedIn: !!accessToken }}>
       {children}
     </AuthContext.Provider>
   );

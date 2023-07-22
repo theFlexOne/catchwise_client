@@ -2,7 +2,7 @@ import { useState } from "react";
 import Form from "../components/Form";
 import TextField from '../components/TextField';
 
-const Signup = () => {
+const SignUp = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -12,19 +12,22 @@ const Signup = () => {
   }
 
   return (
-    <div className='h-full flex justify-center items-center'>
-      <div className='border rounded p-2 h-fit'>
-        <Form onSubmit={handleSubmit} header="Signup">
-          <TextField id='email' label='Email' name='email' placeholder='example@aol.com' value={email} onChange={e => setEmail(e.target.value)} />
-          <TextField id='password' label='Password' name='password' type='password' value={password} onChange={e => setPassword(e.target.value)} />
-          <button
-            type='submit'
-            className="py-3 rounded bg-amber-600 hover:bg-amber-700 text-white font-medium w-full"
-          >Signup</button>
-        </Form>
-      </div>
+    <div className='h-full flex flex-col gap-8 justify-center items-center'>
+      <Form onSubmit={handleSubmit} header="SignUp">
+        <TextField id='email' label='Email' name='email' placeholder='example@aol.com' value={email} onChange={e => setEmail(e.target.value)} />
+        <TextField id='password' label='Password' name='password' type='password' value={password} onChange={e => setPassword(e.target.value)} />
+        <button
+          type='submit'
+          className="py-3 rounded bg-amber-600 hover:bg-amber-700 text-white font-medium w-full"
+        >SignUp</button>
+      </Form>
+      <p>
+        Already have an account?
+        <a href="/login" className="text-amber-600 hover:text-amber-700"> Log in here!</a>
+      </p>
+
     </div>
   )
 }
 
-export default Signup
+export default SignUp

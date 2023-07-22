@@ -1,8 +1,8 @@
-import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
-import Login from "./pages/Login";
+import Login from "./pages/LogIn";
 import Root from "./components/Root";
-import Signup from "./pages/Signup";
+import SignUp from "./pages/SignUp";
 import Landing from "./pages/Landing";
 import MapPage from "./pages/MapPage";
 
@@ -17,14 +17,6 @@ const router = createBrowserRouter([
         element: <Landing />,
       },
       {
-        path: "login",
-        element: <Login />,
-      },
-      {
-        path: "signup",
-        element: <Signup />,
-      },
-      {
         path: "map",
         element: <MapPage />,
       },
@@ -32,17 +24,23 @@ const router = createBrowserRouter([
         path: "home",
         element: <Dashboard />,
       },
+      {
+        path: "login",
+        element: <Login />,
+      },
+      {
+        path: "signup",
+        element: <SignUp />,
+      },
     ]
-  }
+  },
+
 ]
 );
 
 
 
 const Router = () => {
-
-
-
   return (
     <RouterProvider router={router} />
   )

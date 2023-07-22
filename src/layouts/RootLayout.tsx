@@ -6,9 +6,9 @@ const RootLayout = ({ children }: any) => {
   return (
     <div className="h-screen bg-white flex flex-col">
       <Header />
-      <div className="grow">
+      <main className="grow">
         {children}
-      </div>
+      </main>
     </div>
   );
 };

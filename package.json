@@ -12,6 +12,7 @@
   "dependencies": {
     "@heroicons/react": "^2.0.18",
     "@react-google-maps/api": "^2.18.1",
+    "@react-oauth/google": "^0.11.0",
     "@turf/turf": "^6.5.0",
     "axios": "^1.4.0",
     "localforage": "^1.10.0",
@@ -24,12 +25,14 @@
     "sockjs-client": "^1.6.1",
     "sort-by": "^1.2.0",
     "stompjs": "^2.3.3",
-    "tailwind-merge": "^1.13.1"
+    "tailwind-merge": "^1.13.1",
+    "vite-plugin-svgr": "^3.2.0"
   },
   "devDependencies": {
     "@svgr/webpack": "^8.0.1",
     "@types/react": "^18.0.37",
     "@types/react-dom": "^18.0.11",
+    "@types/react-map-gl": "^6.1.3",
     "@types/sockjs-client": "^1.5.1",
     "@types/stompjs": "^2.3.5",
     "@types/turf": "^3.5.32",

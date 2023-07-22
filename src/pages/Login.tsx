@@ -33,7 +33,7 @@ const Login = () => {
   }, [navigate])
 
   return (
-    <div className='h-full flex justify-center items-center'>
+    <div className='h-full flex flex-col gap-8 justify-center items-center'>
       <Form onSubmit={onSubmit} header="Log In">
         <TextField id='email' label='Email' name='email' placeholder='example@aol.com' value={email} onChange={e => setEmail(e.target.value)} />
         <TextField id='password' label='Password' name='password' type='password' value={password} onChange={e => setPassword(e.target.value)} />
@@ -42,7 +42,10 @@ const Login = () => {
           className="py-3 rounded bg-amber-600 hover:bg-amber-700 text-white font-medium w-full"
         >Log In</button>
       </Form>
-      <Footer />
+      <p>
+        New to Catchwise?
+        <a href="/signup" className="text-amber-600 hover:text-amber-700"> Sign up here!</a>
+      </p>
     </div>
   )
 }

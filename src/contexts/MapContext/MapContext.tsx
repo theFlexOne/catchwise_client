@@ -1,6 +1,6 @@
 import { createContext, useEffect, useRef, useState } from 'react';
 import MapMarker from '../../types/MapMarker';
-import { LngLatBounds, MapboxEvent, ViewState, ViewStateChangeEvent } from 'react-map-gl';
+import { LngLatBounds, MapEvent, ViewState, ViewStateChangeEvent } from 'react-map-gl';
 import Lake from '../../types/Lake';
 import { MapRef } from 'react-map-gl';
 import * as turf from '@turf/turf';
@@ -20,7 +20,7 @@ type MapContextType = {
   onMove?: (event: ViewStateChangeEvent) => void;
   onMarkerClick: (id: number) => void;
   onSearch?: (lakeId: number) => void;
-  onLoad?: (event: MapboxEvent) => void;
+  onLoad?: (event: MapEvent) => void;
 }
 type Options = {
   signal?: AbortSignal | undefined;
@@ -29,8 +29,7 @@ type Options = {
   };
   [key: string]: unknown;
 }
-
-export type LocationName = {
+type LocationName = {
   id: number;
   name: string;
   county: string;
@@ -46,7 +45,7 @@ const zoom = {
 
 export const MapContext = createContext<MapContextType | null>(null);
 
-export const MapProvider = ({ children }: MapProviderProps) => {
+const MapProvider = ({ children }: MapProviderProps) => {
   const [coords] = useUserLocation();
   const [mapMarkers, setMapMarkers] = useState<MapMarker[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<Lake | null>(null);
@@ -68,7 +67,7 @@ export const MapProvider = ({ children }: MapProviderProps) => {
     const newBounds = event.target.getBounds();
     setBounds(newBounds);
   };
-  const onLoad = (event: MapboxEvent): void => {
+  const onLoad = (event: MapEvent): void => {
     const map = event.target;
     setBounds(map.getBounds());
   };
@@ -134,11 +133,11 @@ export const MapProvider = ({ children }: MapProviderProps) => {
 
   const currentMapMarkers = (() => {
     if (!bounds) return [];
-    const bbox = turf.bboxPolygon(bounds.toArray().flat());
-    if (!bbox) return [];
+    const bbox = [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()];
+    const polygon = turf.bboxPolygon(bbox);
     return mapMarkers.filter((marker) => {
       const markerPoint = turf.point(marker.coordinates);
-      return turf.inside(markerPoint, bbox);
+      return turf.inside(markerPoint, polygon);
     });
   })()
 
@@ -166,3 +165,5 @@ export const MapProvider = ({ children }: MapProviderProps) => {
     </MapContext.Provider >
   );
 }
+
+export default MapProvider;
