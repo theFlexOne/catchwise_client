@@ -10,16 +10,16 @@ export type HeaderNavLinkProps = {
 
 
 const HeaderNavLink = ({ to, className, children, onClick = function (e) { return } }: HeaderNavLinkProps) => {
-  onClick = function (e) {
+  const handleClick = (e: any) => {
     e.preventDefault()
-    return onClick(e)
+    return onClick(e);
   }
 
   return (
     <NavLink
       to={to}
       className={twMerge("", className)}
-      onClick={onClick}
+      onClick={handleClick}
     >
       {children}
     </NavLink>

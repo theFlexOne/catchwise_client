@@ -144,6 +144,7 @@ const MapProvider = ({ children }: MapProviderProps) => {
   useEffect(() => {
     if (!coords) return;
     fetchMarkers(coords);
+    mapRef.current?.setCenter(coords);
   }, [coords]);
 
   mapMarkers.length > 0 && console.log(mapMarkers);

@@ -9,9 +9,10 @@ import Dot from './MarkerSymbols/Dot';
 const MapboxMap = () => {
   const { currentMapMarkers, mapRef, onMove, onLoad, onMarkerClick, initialViewState } = useMap();
 
-  // useEffect(() => {
-  //   setControlledMarkers(lakeMarkers);
-  // }, [lakeMarkers]);
+  console.log(currentMapMarkers);
+
+  const waterAccesses = currentMapMarkers.filter((marker: MapMarker) => marker.type === 'water_access');
+  console.log(waterAccesses.length);
 
 
   return (

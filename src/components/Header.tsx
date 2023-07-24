@@ -19,32 +19,33 @@ const Header = () => {
         <Link to="/">
           <LogoSVG className="h-14 w-14" />
         </Link>
-        <nav className="ml-auto">
-          <div>
-            {isLoggedIn ? (
-              <HeaderNavLink
-                to="/"
-                className=""
-                onClick={() => logout()}
-              >
-                logout
-              </HeaderNavLink>
-            ) : (
-              <div className="flex gap-4">
-                {!isLoginPath && <Link
-                  to="/login"
-                  className="text-lg font-semibold px-2 py-1 rounded bg-zinc-300/0 hover:bg-zinc-300/30 transition-all duration-2000"
-                  state={{ redirectPath: pathname }}
-                >log in</Link>}
-                {!isSignupPath && <Link
-                  to="/signup"
-                  className="text-lg font-semibold bg-sky-600 rounded px-2 py-1 text-white hover:bg-sky-700 transition-colors duration-200"
-                  state={{ redirectPath: pathname }}
-                >create account</Link>}
-              </div>
-            )}
-          </div>
+        <nav className="mx-auto text-white">
+          <Link to="/map">map</Link>
         </nav>
+        <div className="ml-auto">
+          {isLoggedIn ? (
+            <HeaderNavLink
+              to="/"
+              className=""
+              onClick={logout}
+            >
+              logout
+            </HeaderNavLink>
+          ) : (
+            <div className="flex gap-4">
+              {!isLoginPath && <Link
+                to="/login"
+                className="text-lg font-semibold px-2 py-1 rounded bg-zinc-300/0 hover:bg-zinc-300/30 transition-all duration-2000"
+                state={{ redirectPath: pathname }}
+              >log in</Link>}
+              {!isSignupPath && <Link
+                to="/signup"
+                className="text-lg font-semibold bg-sky-600 rounded px-2 py-1 text-white hover:bg-sky-700 transition-colors duration-200"
+                state={{ redirectPath: pathname }}
+              >create account</Link>}
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

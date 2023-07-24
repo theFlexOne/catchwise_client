@@ -3,30 +3,29 @@ import { useEffect, useState } from "react";
 import Coords from "../types/Coords";
 
 const IP_INFO_API_KEY = import.meta.env.VITE_IP_INFO_API_KEY as string;
+const IP_DATA_API_KEY = "16b3dfd707ec2e7141bdda96b4d2ec20ead5deadf8c8a1ffa68beaaf";
 const IP_INFO_API_URL = "https://ipinfo.io" as string;
 
 export default function useUserLocation() {
-  const [coords, setCoords] = useState<Coords | null>(null);
+  const [ipCoords, setIPCoords] = useState<Coords | null>(null);
+  const [navigatorCoords, setNavigatorCoords] = useState<Coords | null>(null);
   const [error, setError] = useState<any | null>(null);
 
   useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        setCoords([longitude, latitude]);
-      },
-      async () => {
-        try {
-          const coords = await getCoordinatesFromIP();
-          setCoords(coords);
-        } catch (error) {
-          setError(error);
-        }
-      }
-    );
+    getCoordsFromBrowser((position) => {
+      setNavigatorCoords([position.coords.longitude, position.coords.latitude]);
+    });
+
+    getCoordinatesFromIP().then((coords) => {
+      setIPCoords([coords[0], coords[1]]);
+    })
+
   }, []);
 
-  return [coords, error] as const;
+  return [
+    navigatorCoords ?? ipCoords,
+    error
+  ] as const;
 }
 
 async function getCoordinatesFromIP(): Promise<[number, number]> {
@@ -37,3 +36,18 @@ async function getCoordinatesFromIP(): Promise<[number, number]> {
   const [lat, lng] = loc.loc.split(",");
   return [lng, lat];
 }
+
+const getCoordsFromBrowser = (cb: (position: GeolocationPosition) => void, errCb?: (err: GeolocationPositionError) => void) => {
+  navigator.geolocation.getCurrentPosition(cb, errCb, { enableHighAccuracy: true });
+};
+
+const getCoordsFromIP = async () => {
+  const ip = await axios.get("https://checkip.amazonaws.com/").then((res) => res.data);
+  const ipDataURL = new URL("https://api.ipdata.co/");
+  ipDataURL.pathname = ip;
+  ipDataURL.search = new URLSearchParams({ "api-key": IP_DATA_API_KEY }).toString();
+
+  const { data } = await axios.get(ipDataURL.toString());
+  const { latitude, longitude } = data;
+  return [longitude, latitude];
+};
