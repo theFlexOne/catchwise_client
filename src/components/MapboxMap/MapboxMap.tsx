@@ -9,12 +9,6 @@ import Dot from './MarkerSymbols/Dot';
 const MapboxMap = () => {
   const { currentMapMarkers, mapRef, onMove, onLoad, onMarkerClick, initialViewState } = useMap();
 
-  console.log(currentMapMarkers);
-
-  const waterAccesses = currentMapMarkers.filter((marker: MapMarker) => marker.type === 'water_access');
-  console.log(waterAccesses.length);
-
-
   return (
     <Map
       initialViewState={initialViewState}
@@ -39,7 +33,7 @@ const MapboxMap = () => {
             longitude={marker.coordinates[0]}
             latitude={marker.coordinates[1]}
           >
-            <Dot />
+            <Dot colorPrimary={marker.type === "lake" ? "#00B1FD" : "#f59e0b"} />
           </Marker>
         </Fragment>
       ))}

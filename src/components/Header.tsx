@@ -19,7 +19,7 @@ const Header = () => {
         <Link to="/">
           <LogoSVG className="h-14 w-14" />
         </Link>
-        <nav className="mx-auto text-white">
+        <nav className="mx-auto text-white flex justify-center grow">
           <Link to="/map">map</Link>
         </nav>
         <div className="ml-auto">

@@ -10,7 +10,7 @@ import useUserLocation from '../../hooks/useUserLocation';
 type MapProviderProps = {
   children: React.ReactNode,
 }
-type MapContextType = {
+type MapContextValue = {
   currentMapMarkers: MapMarker[];
   mapRef: React.MutableRefObject<any>;
   selectedLocation: Lake | null;
@@ -36,14 +36,13 @@ type LocationName = {
   state: string;
 }
 
-
 const zoom = {
   MIN: 0,
   MAX: 15,
   INITIAL: 10,
 }
 
-export const MapContext = createContext<MapContextType | null>(null);
+export const MapContext = createContext<MapContextValue | null>(null);
 
 const MapProvider = ({ children }: MapProviderProps) => {
   const [coords] = useUserLocation();
@@ -52,10 +51,11 @@ const MapProvider = ({ children }: MapProviderProps) => {
   const [bounds, setBounds] = useState<LngLatBounds | null>(null);
 
   const mapRef = useRef<MapRef | null>(null);
+  const mapCenter = useRef<[number, number] | null>(null);
 
   const initialViewState: ViewState = {
-    longitude: coords?.[0] || 0,
-    latitude: coords?.[1] || 0,
+    longitude: mapCenter.current?.[0] || coords?.[0] || 0,
+    latitude: mapCenter.current?.[1] || coords?.[1] || 0,
     zoom: zoom.INITIAL,
     bearing: 0,
     pitch: 0,
@@ -66,10 +66,14 @@ const MapProvider = ({ children }: MapProviderProps) => {
   const onMove = (event: ViewStateChangeEvent): void => {
     const newBounds = event.target.getBounds();
     setBounds(newBounds);
+    const center: [number, number] = [event.target.getCenter().lng, event.target.getCenter().lat];
+    mapCenter.current = center;
   };
   const onLoad = (event: MapEvent): void => {
     const map = event.target;
     setBounds(map.getBounds());
+    const center: [number, number] = [map.getCenter().lng, map.getCenter().lat];
+    mapCenter.current = center;
   };
   const onMarkerClick = (id: number) => {
     fetchLocationInfo(id).then(lakeInfo => {
@@ -105,7 +109,6 @@ const MapProvider = ({ children }: MapProviderProps) => {
       console.error(error);
     }
   }
-
   async function fetchLocationInfo(lakeId: number): Promise<Lake | undefined> {
     const url = new URL(`http://localhost:8080/api/v1/lakes/${lakeId}`);
     try {
@@ -116,7 +119,6 @@ const MapProvider = ({ children }: MapProviderProps) => {
       console.error(error);
     }
   }
-
   async function fetchLocationNames(): Promise<LocationName[]> {
     const url = new URL("http://localhost:8080/api/v1/location-names");
     try {
@@ -128,8 +130,6 @@ const MapProvider = ({ children }: MapProviderProps) => {
       return [];
     }
   }
-
-
 
   const currentMapMarkers = (() => {
     if (!bounds) return [];

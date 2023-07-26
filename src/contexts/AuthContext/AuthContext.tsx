@@ -27,14 +27,7 @@ export const AuthProvider = ({ children }: { children?: React.ReactNode }) => {
   const location = useLocation();
   const pathname = location.pathname;
 
-  console.log("location", location);
-
-
   const navigate = useNavigate();
-
-
-
-  console.log(location);
 
   async function login({ email, password }: { email: string, password: string }): Promise<boolean> {
     const loginUrl = 'http://localhost:8080/api/v1/auth/login';
@@ -53,14 +46,10 @@ export const AuthProvider = ({ children }: { children?: React.ReactNode }) => {
 
   const logout = useCallback(async function () {
     const logoutUrl = 'http://localhost:8080/api/v1/auth/logout';
-    try {
-      await axios.post(logoutUrl);
-      setAccessToken(null);
-      localStorage.removeItem('accessToken');
-      navigate('/login');
-    } catch (error) {
-      console.error(error);
-    }
+    axios.post(logoutUrl);
+    setAccessToken(null);
+    localStorage.removeItem('accessToken');
+    navigate('/login');
   }, [navigate])
 
   async function signup({ email, password }: { email: string, password: string }) {
@@ -69,8 +58,6 @@ export const AuthProvider = ({ children }: { children?: React.ReactNode }) => {
     try {
       const response = await axios.post(signUpUrl, body);
       if (response.status !== 200) throw new Error("Sign up failed:\n" + response.statusText);
-      console.log(response.data);
-
       localStorage.setItem('accessToken', response.data.accessToken)
       setAccessToken(response.data.accessToken);
       return true;
@@ -90,8 +77,6 @@ export const AuthProvider = ({ children }: { children?: React.ReactNode }) => {
   }, [accessToken]);
 
   useEffect(() => {
-    console.log("pathname", pathname);
-
     if (!OPEN_ROUTES.includes(pathname) && !accessToken) {
       navigate('/login');
     }

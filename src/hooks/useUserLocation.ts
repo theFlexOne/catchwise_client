@@ -32,12 +32,12 @@ async function getCoordinatesFromIP(): Promise<[number, number]> {
   const url = new URL(IP_INFO_API_URL);
   url.search = new URLSearchParams({ token: IP_INFO_API_KEY }).toString();
 
-  const { data: loc } = await axios.get(url.toString());
-  const [lat, lng] = loc.loc.split(",");
+  const { data } = await axios.get(url.toString());
+  const [lat, lng] = data.loc.split(",");
   return [lng, lat];
 }
 
-const getCoordsFromBrowser = (cb: (position: GeolocationPosition) => void, errCb?: (err: GeolocationPositionError) => void) => {
+const getCoordsFromBrowser = async (cb: (position: GeolocationPosition) => void, errCb?: (err: GeolocationPositionError) => void) => {
   navigator.geolocation.getCurrentPosition(cb, errCb, { enableHighAccuracy: true });
 };
 

@@ -2,7 +2,7 @@ import { useState } from "react";
 import Form from "../components/Form";
 import TextField from '../components/TextField';
 import useAuth from "../contexts/AuthContext/useAuth";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const SignUp = () => {
   const [email, setEmail] = useState('');
@@ -36,7 +36,7 @@ const SignUp = () => {
       </Form>
       <p>
         Already have an account?
-        <a href="/login" className="text-amber-600 hover:text-amber-700"> Log in here!</a>
+        <Link to="/login" className="text-amber-600 hover:text-amber-700"> Log in here!</Link>
       </p>
 
     </div>

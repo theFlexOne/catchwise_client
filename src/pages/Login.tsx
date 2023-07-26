@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import useAuth from '../contexts/AuthContext/useAuth';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Form from '../components/Form';
 import TextField from '../components/TextField';
 
@@ -16,7 +16,7 @@ const Login = () => {
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    console.log('username', email);
+    console.log('email', email);
     console.log('password', password);
 
     const isLoggedIn = await login({ email, password });
@@ -43,7 +43,7 @@ const Login = () => {
       </Form>
       <p>
         New to Catchwise?
-        <a href="/signup" className="text-amber-600 hover:text-amber-700"> Sign up here!</a>
+        <Link to="/signup" className="text-amber-600 hover:text-amber-700"> Sign up here!</Link>
       </p>
     </div>
   )
